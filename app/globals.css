@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Iowan Old Style', 'Baskerville', 'Times New Roman', serif;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: #fff;
+  color: #11172f;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+button, a { -webkit-tap-highlight-color: transparent; }
+a { color: inherit; text-decoration: none; }
+::selection { background: #f6dc18; color: #11172f; }
+
+@layer components {
+  .shell { @apply mx-auto w-full max-w-[1300px] px-6 lg:px-10; }
+  .section-space { @apply py-20 sm:py-24 lg:py-28; }
+  .section-label { @apply inline-flex items-center rounded-full bg-cobalt px-3 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-white; }
+  .yellow-label { @apply inline-flex items-center rounded-full bg-lemon px-3 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-ink; }
+  .display { @apply font-display tracking-[-0.045em]; }
+  .muted-copy { @apply text-[13px] leading-6 text-muted; }
+  .primary-button { @apply inline-flex items-center justify-center gap-2 rounded-md bg-[#090BC2] px-5 py-3 text-[12px] font-bold text-white transition hover:-translate-y-0.5 hover:bg-cobalt-dark focus:outline-none focus:ring-4 focus:ring-cobalt/15; }
+  .soft-card { @apply rounded-2xl border border-line bg-white; }
+}
+
+.noise { position: relative; isolation: isolate; }
+.noise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .22;
+  z-index: -1;
+  background-image: radial-gradient(rgba(255,255,255,.28) .6px, transparent .6px);
+  background-size: 6px 6px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .float-slow { animation: float 7s ease-in-out infinite; }
+  .float-slower { animation: float 9s ease-in-out -2s infinite; }
+  @keyframes float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
+}
