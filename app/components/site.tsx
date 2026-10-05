@@ -56,7 +56,7 @@ export function Hero() {
     <section className="relative overflow-hidden bg-white pb-16 pt-36 sm:pb-24 sm:pt-44">
       <div className="shell text-center">
         <SectionLabel><Image src="/check.png" alt="Chat2Build" className="h-4 w-4 mr-2" width={50} height={50} />4-weeks bootcamp</SectionLabel>
-        <h1 className="mx-auto mt-5 max-w-3xl text-[30px] font-semibold leading-[1.07] tracking-[-0.055em] text-[#090BC2] sm:text-[40px]">YOUR APP. <span>BUILT WITH </span><span className='bg-lemon p-2 italic '>AI</span> </h1>
+        <h1 className="mx-auto mt-5 max-w-3xl text-[30px] font-semibold leading-[1.07] tracking-[-0.055em] text-[#090BC2] sm:text-[38px]">YOUR APP. <span>BUILT WITH</span><span className='bg-lemon p-1 italic '>AI</span> </h1>
         <p className="display mx-auto mt-4 max-w-3xl text-[25px] leading-[1.08] text-ink sm:text-[35px]">From idea to App Store &amp; Google Play without learning to code.</p>
         <p className="muted-copy mx-auto mt-5 max-w-lg text-[12px] sm:text-[13px]">Learn how to build, test, and launch real web and mobile apps using<br className="hidden sm:block" /> AI-assisted software starting from zero.</p>
         <a href="#pricing" className="primary-button mt-6">Register Now</a>
