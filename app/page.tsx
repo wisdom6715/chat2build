@@ -1,4 +1,5 @@
 import { AudienceSection, CtaBanner, FaqSection, Footer, Header, Hero, LearningSection, PricingSection, RoadmapSection, TeamSection } from './components/site'
+import { WhatsAppSupport } from './components/WhatsApp'
 
 export default function HomePage() {
   return (
@@ -13,6 +14,7 @@ export default function HomePage() {
       <FaqSection />
       <CtaBanner />
       <Footer />
+      <WhatsAppSupport />
     </main>
   )
 }
