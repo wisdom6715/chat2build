@@ -56,9 +56,9 @@ export function Hero() {
     <section className="relative overflow-hidden bg-white pb-16 pt-36 sm:pb-24 sm:pt-44">
       <div className="shell text-center">
         <SectionLabel><Image src="/check.png" alt="Chat2Build" className="h-4 w-4 mr-2" width={50} height={50} />4-weeks bootcamp</SectionLabel>
-        <h1 className="mx-auto mt-5 max-w-3xl text-[30px] font-semibold leading-[1.07] tracking-[-0.055em] text-[#090BC2] sm:text-[30px]">YOUR APP. <span>BUILT WITH</span><span className='bg-lemon p-1 italic '>AI</span> </h1>
+        <h1 className="mx-auto mt-5 md:max-w-3xl text-[30px] font-semibold leading-[1.07] tracking-[-0.055em] text-[#090BC2] sm:text-[30px]">YOUR APP. <span>BUILT WITH</span><span className='bg-lemon p-1 italic '>AI</span> </h1>
         <p className="display mx-auto mt-4 max-w-3xl text-[25px] leading-[1.08] text-ink sm:text-[35px]">From idea to App Store &amp; Google Play without learning to code.</p>
-        <p className="muted-copy mx-auto mt-5 max-w-lg text-[12px] sm:text-[13px]">Learn how to build, test, and launch real web and mobile apps using<br className="hidden sm:block" /> AI-assisted software starting from zero.</p>
+        <p className="muted-copy mx-auto mt-5 max-w-lg text-[12px] sm:text-[16px]">Learn how to build, test, and launch real web and mobile apps using<br className="hidden sm:block" /> AI-assisted software starting from zero.</p>
         <a href="#pricing" className="primary-button mt-6">Register Now</a>
         <div className="relative mx-auto mt-14 max-w-[960px] overflow-hidden rounded-2xl border border-[#ececf5] bg-[#f8f8fc] p-3 shadow-[0_20px_70px_rgba(29,25,185,.07)] sm:mt-16 sm:p-5">
           <div className="relative aspect-[1.85] overflow-hidden rounded-xl border border-white bg-white shadow-[0_2px_12px_rgba(17,23,47,.05)]">
@@ -112,7 +112,7 @@ const roadmap = [
 ]
 
 export function RoadmapSection() {
-  return <section className="bg-white" id="roadmap"><div className="shell section-space"><div className="mx-auto max-w-2xl text-center"><SectionLabel yellow>curriculum overview</SectionLabel><h2 className="display mt-5 text-[32px] leading-none text-ink sm:text-[39px]">Your Step-by-Step 6-Week Roadmap</h2><p className="muted-copy mx-auto mt-4 max-w-md">A step-by-step program that helps you turn your ideas into real apps and launch them on Playstore &amp; App Store.</p></div><div className="mx-auto mt-12 grid max-w-4xl gap-5 sm:grid-cols-2">{roadmap.map((item) => <article key={item.week} className="soft-card p-5 transition hover:border-[#080981]/30 hover:shadow-card"><div className="flex items-start justify-between"><span className="yellow-label">{item.week}</span><span className="text-lg text-[#080981]">{item.icon}</span></div><h3 className="mt-4 text-[16px] font-bold tracking-[-0.04em]">{item.title}</h3><p className="mt-2 min-h-[74px] text-[11px] leading-5 text-muted">{item.copy}</p><p className="mt-5 text-[9px] font-bold text-[#080981]">Milestone: {item.milestone}</p></article>)}</div></div></section>
+  return <section className="bg-white" id="roadmap"><div className="shell section-space"><div className="mx-auto max-w-2xl text-center"><SectionLabel yellow>curriculum overview</SectionLabel><h2 className="display mt-5 text-[32px] leading-none text-ink sm:text-[39px]">Your Step-by-Step 4-Week Roadmap</h2><p className="muted-copy mx-auto mt-4 max-w-md">A step-by-step program that helps you turn your ideas into real apps and launch them on Playstore &amp; App Store.</p></div><div className="mx-auto mt-12 grid max-w-4xl gap-5 sm:grid-cols-2">{roadmap.map((item) => <article key={item.week} className="soft-card p-5 transition hover:border-[#080981]/30 hover:shadow-card"><div className="flex items-start justify-between"><span className="yellow-label">{item.week}</span><span className="text-lg text-[#080981]">{item.icon}</span></div><h3 className="mt-4 text-[16px] font-bold tracking-[-0.04em]">{item.title}</h3><p className="mt-2 min-h-[74px] text-[11px] leading-5 text-muted">{item.copy}</p><p className="mt-5 text-[9px] font-bold text-[#080981]">Milestone: {item.milestone}</p></article>)}</div></div></section>
 }
 
 const audiences = [
