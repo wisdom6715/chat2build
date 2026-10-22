@@ -9,12 +9,13 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 const ASSISTANT_PHONE = '09139249581'
 
 const perks = [
+  'Bootcamp commencement date: November 15, 2026',
   'Guaranteed 4-week intensive bootcamp immersion',
   'Weekly 3 days live mentor Q&A & live architecture teardowns',
   'Build real web & cross-platform mobile apps with AI tools',
   'Step-by-step App Store & Google Play publishing walkthrough',
   'Direct 1-on-1 code debugging & 24/7 technical tutor support',
-  'Access to private student builder community & Telegram/WhatsApp room',
+  'Access to private student builder community & official Slack channel',
   'Lifetime access to recorded classes and curriculum updates',
   'No hidden fees — transparent ₦30,000 one-time payment',
 ]
@@ -130,12 +131,18 @@ export default function RegistrationPage() {
       <main className="shell py-10 sm:py-16 flex-1">
         <div className="mx-auto max-w-5xl">
           <div className="mb-8 text-center sm:text-left">
-            <span className="yellow-label">Bootcamp Enrollment</span>
+            <div className="flex flex-wrap items-center gap-2.5 justify-center sm:justify-start">
+              <span className="yellow-label">Bootcamp Enrollment</span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#090BC2]/10 border border-[#090BC2]/20 px-3 py-0.5 text-[11px] font-bold text-[#090BC2]">
+                <span>🗓️</span>
+                <span>Commencement Date: November 15, 2026</span>
+              </span>
+            </div>
             <h1 className="display mt-3 text-[30px] sm:text-[40px] font-black leading-tight text-ink">
               Register for Chat2Build Bootcamp
             </h1>
             <p className="mt-2 text-[13px] sm:text-[15px] text-muted max-w-2xl">
-              Fill in your details below to secure your seat. You will be redirected to Bachs to complete your ₦30,000 payment.
+              Fill in your details below to secure your seat. You will be redirected to complete your ₦30,000 payment.
             </p>
           </div>
 
@@ -261,7 +268,7 @@ export default function RegistrationPage() {
                       className="w-full rounded-lg border border-line px-3.5 py-2.5 text-[13px] text-ink placeholder:text-muted/60 focus:border-[#090BC2] focus:outline-none focus:ring-2 focus:ring-[#090BC2]/20"
                     />
                     <p className="mt-1 text-[10px] text-muted">
-                      Used to verify your seat with our virtual assistant ({ASSISTANT_PHONE}) after payment.
+                      Used to message our virtual assistant ({ASSISTANT_PHONE}) to be added to the official Slack channel.
                     </p>
                   </div>
 
@@ -299,7 +306,7 @@ export default function RegistrationPage() {
                 </form>
 
                 <div className="mt-5 border-t border-line pt-4 text-center text-[10px] text-muted">
-                  <p>🔒 256-bit encrypted checkout. You will be redirected to Bachs to complete your payment.</p>
+                  <p>🔒 256-bit encrypted checkout. You will be redirected to complete your payment.</p>
                 </div>
               </div>
             </div>

@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 const Arrow = ({ light = false }: { light?: boolean }) => (
   <svg aria-hidden="true" width="15" height="15" viewBox="0 0 15 15" fill="none">
@@ -65,29 +65,62 @@ export function Header() {
 }
 
 export function Hero() {
+  const [isPlaying, setIsPlaying] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  const handleTogglePlay = () => {
+    if (!videoRef.current) return
+    if (videoRef.current.paused) {
+      videoRef.current.play()
+      setIsPlaying(true)
+    } else {
+      videoRef.current.pause()
+      setIsPlaying(false)
+    }
+  }
+
   return (
     <section className="relative overflow-hidden bg-white pb-16 pt-36 sm:pb-24 sm:pt-44">
       <div className="shell text-center">
-        <SectionLabel><Image src="/check.png" alt="Chat2Build" className="h-4 w-4 mr-2" width={50} height={50} />4-weeks bootcamp</SectionLabel>
+        <div className="flex items-center justify-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#090BC2]/10 border border-[#090BC2]/25 px-3.5 py-1 text-[12px] font-bold text-[#090BC2]">
+            <span>🗓️</span>
+            <span>Commences November 15, 2026</span>
+          </span>
+        </div>
         <h1 className="mx-auto mt-5 md:max-w-3xl text-[30px] font-semibold leading-[1.07] tracking-[-0.055em] text-[#090BC2] sm:text-[30px]">YOUR APP. <span>BUILT WITH</span><span className='bg-lemon p-1 italic '>AI</span> </h1>
         <p className="display mx-auto mt-4 max-w-3xl text-[25px] leading-[1.08] text-ink sm:text-[35px]">From idea to App Store &amp; Google Play without learning to code.</p>
         <p className="muted-copy mx-auto mt-5 max-w-lg text-[12px] sm:text-[16px]">Learn how to build, test, and launch real web and mobile apps using<br className="hidden sm:block" /> AI tools starting from zero.</p>
         <Link href="/registration" className="primary-button mt-6">Register Now (₦30,000)</Link>
-        <div className="relative mx-auto mt-14 max-w-[960px] overflow-hidden rounded-2xl border border-[#ececf5] bg-[#f8f8fc] p-3 shadow-[0_20px_70px_rgba(29,25,185,.07)] sm:mt-16 sm:p-5">
-          <div className="relative aspect-[1.85] overflow-hidden rounded-xl border border-white bg-white shadow-[0_2px_12px_rgba(17,23,47,.05)]">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_55%,rgba(45,37,235,.16),transparent_22%),linear-gradient(112deg,#f9f9fc,#fff 48%,#fbfbff)]" />
-            <div className="absolute left-[6%] top-[14%] h-[70%] w-[18%] border-r border-[#f0f0f5] text-left opacity-60">
-              <div className="mb-4 h-2 w-10 rounded bg-[#dedff0]" />
-              {[1,2,3,4,5,6].map((item) => <div key={item} className="mb-3 flex gap-1.5"><span className="h-2 w-2 rounded-sm bg-[#e7e7f3]" /><span className="h-2 w-12 rounded bg-[#f1f1f7]" /></div>)}
-            </div>
-            <div className="absolute right-[7%] top-[15%] h-2 w-14 rounded bg-[#f3a1ac] opacity-80" />
-            <div className="absolute left-[30%] top-[18%] h-3 w-[36%] rounded bg-[#f0f0f6]" />
-            <div className="absolute left-[30%] top-[29%] h-2 w-[20%] rounded bg-[#f5f5f8]" />
-            <div className="absolute left-[38%] top-[48%] h-2 w-[17%] rounded bg-[#e9e9f6]" />
-            <div className="absolute left-[63%] top-[48%] h-2 w-[8%] rounded bg-[#dcdcf0]" />
-            <div className="absolute left-1/2 top-1/2 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#080981]/10 shadow-[0_0_42px_rgba(42,32,230,.28)] sm:h-32 sm:w-32">
-              <div className="ml-1 flex h-12 w-12 items-center justify-center rounded-full bg-[#090BC2] shadow-[0_8px_20px_rgba(23,18,198,.35)] sm:h-16 sm:w-16"><span className="ml-1 border-y-[10px] border-l-[17px] border-y-transparent border-l-white sm:border-y-[13px] sm:border-l-[21px]" /></div>
-            </div>
+
+        {/* Video Player Slot */}
+        <div className="relative mx-auto mt-14 max-w-[960px] overflow-hidden rounded-2xl border border-[#ececf5] bg-[#0c0d1e] p-2 sm:p-3.5 shadow-[0_20px_70px_rgba(29,25,185,.12)] sm:mt-16">
+          <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black flex items-center justify-center">
+            <video
+              ref={videoRef}
+              src="https://firebasestorage.googleapis.com/v0/b/firstplay-7bd63.firebasestorage.app/o/WhatsApp%20Video%202026-10-22%20at%205.17.10%20PM.mp4?alt=media&token=c137d8d0-278a-4a53-a27a-c26743ffc378"
+              playsInline
+              preload="metadata"
+              controls={isPlaying}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              className="h-full w-full object-contain"
+            />
+
+            {!isPlaying && (
+              <button
+                type="button"
+                onClick={handleTogglePlay}
+                aria-label="Play video"
+                className="group absolute inset-0 flex items-center justify-center bg-black/35 hover:bg-black/25 transition cursor-pointer"
+              >
+                <div className="relative flex h-20 w-20 sm:h-28 sm:w-28 items-center justify-center rounded-full bg-[#080981]/30 shadow-[0_0_42px_rgba(42,32,230,.4)] group-hover:scale-105 transition">
+                  <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-[#090BC2] text-white shadow-[0_8px_25px_rgba(23,18,198,.5)] group-hover:bg-[#080981] group-hover:shadow-[0_8px_30px_rgba(23,18,198,.7)] transition">
+                    <span className="ml-1 border-y-[10px] sm:border-y-[12px] border-l-[17px] sm:border-l-[20px] border-y-transparent border-l-white" />
+                  </div>
+                </div>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -141,7 +174,17 @@ export function AudienceSection() {
   return <section className="bg-white" id="about"><div className="shell section-space pt-4 sm:pt-10"><div className="mx-auto max-w-2xl text-center"><SectionLabel yellow>who this bootcamp is for</SectionLabel><h2 className="display mt-5 text-[32px] leading-none text-ink sm:text-[39px]">You don&apos;t need to be a programmer.</h2><p className="muted-copy mx-auto mt-4 max-w-lg">Designed for complete beginners who want to turn ideas into real web and mobile apps.</p></div><div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{audiences.map(([title, copy, icon]) => <article key={title} className="soft-card flex gap-3 p-4 transition hover:-translate-y-0.5 hover:shadow-card"><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-lavender text-lg text-[#080981]">{icon}</div><div><h3 className="text-[12px] font-bold tracking-[-0.02em]">{title}</h3><p className="mt-1.5 text-[10px] leading-4 text-muted">{copy}</p></div></article>)}</div></div></section>
 }
 
-const benefits = ['Guaranteed 4-week bootcamp immersion', 'Weekly 3 days live mentor Q&A & architecture teardowns', 'Step-by-step App Store & Google Play walkthrough', 'Direct 1-on-1 code debugging support', 'Lifetime curriculum updates & Recorded Class Walkthrough', 'Access to private community of builders & mentors', 'No hidden fees or extra charges', 'Active 24/7 Support tutor to guide you through the program']
+const benefits = [
+  'Bootcamp commences: November 15, 2026',
+  'Guaranteed 4-week bootcamp immersion',
+  'Weekly 3 days live mentor Q&A & architecture teardowns',
+  'Step-by-step App Store & Google Play walkthrough',
+  'Direct 1-on-1 code debugging support',
+  'Lifetime curriculum updates & Recorded Class Walkthrough',
+  'Access to official Slack channel community of builders & mentors',
+  'No hidden fees or extra charges',
+  'Active 24/7 Support tutor to guide you through the program'
+]
 
 export function PricingSection() {
   return (
@@ -187,14 +230,81 @@ export function PricingSection() {
   )
 }
 
-const team = [
-  { name: 'Olayiwola Ibrahim', role: 'Founder / Lead Marketer', initials: 'OI', tone: 'from-[#d9ddff] to-[#f5e7cb]' },
-  { name: 'Olayiwola Ibrahim', role: 'Co-Founder', initials: 'OI', tone: 'from-[#efe7ff] to-[#d4f1f0]' },
-  { name: 'Usman Mubarak', role: 'Product Designer', initials: 'UM', tone: 'from-[#ffe5d3] to-[#d8e7ff]' },
-]
+const XIcon = () => (
+  <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+)
+
+const LinkedInIcon = () => (
+  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.64 1.64 0 1 0 0-3.28 1.64 1.64 0 0 0 0 3.28m1.39 9.74v-8.37H5.07v8.37h2.78z" />
+  </svg>
+)
 
 export function TeamSection() {
-  return <section className="bg-white" id="contact"><div className="shell section-space pt-0"><div className="mx-auto max-w-2xl text-center"><SectionLabel>our team</SectionLabel><h2 className="display mt-5 text-[31px] leading-none text-ink sm:text-[39px]">The People Behind Chat2Build</h2><p className="muted-copy mx-auto mt-4 max-w-lg">Meet the passionate team focused on building smarter and more accessible learning experiences for students &amp; professionals.</p></div><div className="mt-12 grid gap-5 sm:grid-cols-3">{team.map((member) => <article key={`${member.name}-${member.role}`} className={`relative h-64 overflow-hidden rounded-2xl bg-gradient-to-br ${member.tone} p-2`}><div className="flex h-full items-center justify-center"><span className="font-display text-[74px] tracking-[-.1em] text-white/70">{member.initials}</span></div><div className="absolute inset-x-2 bottom-2 rounded-xl bg-white/95 p-3"><h3 className="text-[12px] font-bold">{member.name}</h3><p className="mt-0.5 text-[9px] tracking-[.04em] text-muted">{member.role}</p></div></article>)}</div></div></section>
+  return (
+    <section className="bg-white" id="contact">
+      <div className="shell section-space pt-0">
+        <div className="mx-auto max-w-2xl text-center">
+          <SectionLabel>our team</SectionLabel>
+          <h2 className="display mt-5 text-[31px] leading-none text-ink sm:text-[39px]">
+            The People Behind Chat2Build
+          </h2>
+          <p className="muted-copy mx-auto mt-4 max-w-lg">
+            Learn directly from passionate builders and engineers focused on creating accessible, production-ready AI software development.
+          </p>
+        </div>
+
+        <div className="mx-auto mt-12 max-w-[340px]">
+          <article className="group overflow-hidden rounded-2xl border border-line bg-white shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-xl">
+            <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#e8e9f5]">
+              <Image
+                src="/olayiwola-ibrahim.jpg"
+                alt="Olayiwola Ibrahim - Founder & Lead Tutor"
+                fill
+                sizes="(max-width: 640px) 100vw, 340px"
+                className="object-cover object-top transition duration-500 group-hover:scale-105"
+                priority
+              />
+            </div>
+
+            <div className="p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-[17px] font-bold text-ink">Olayiwola Ibrahim</h3>
+                  <p className="text-[12px] font-bold text-[#090BC2] mt-0.5">
+                    Founder / Lead Tutor
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <a
+                    href="https://x.com/wisdomDev67"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Visit Olayiwola Ibrahim on X"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-lavender text-ink hover:bg-black hover:text-white transition shadow-sm"
+                  >
+                    <XIcon />
+                  </a>
+                  <a
+                    href="https://www.linkedin.com/in/olayiwola-ibrahim-b0b468278?utm_source=share_via&utm_content=profile&utm_medium=member_android"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Visit Olayiwola Ibrahim on LinkedIn"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-lavender text-ink hover:bg-[#0077b5] hover:text-white transition shadow-sm"
+                  >
+                    <LinkedInIcon />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  )
 }
 
 const faqs = [
@@ -219,7 +329,7 @@ export function CtaBanner() {
             <span className="font-sans font-black tracking-[-.06em]">Start shipping it.</span>
           </h2>
           <p className="mx-auto mt-5 max-w-md text-[11px] leading-5 text-white/75">
-            Join 378+ builders in the upcoming Chat2Build Bootcamp and launch your software into real production.
+            Join 378+ builders in the upcoming Chat2Build Bootcamp commencing November 15, 2026 and launch your software into real production.
           </p>
           <Link
             href="/registration"
