@@ -21,10 +21,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Please provide your phone / WhatsApp number.' }, { status: 400 })
     }
 
-    // Determine site origin for redirects
-    const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || 'localhost:3000'
-    const proto = req.headers.get('x-forwarded-proto') || (host.startsWith('localhost') ? 'http' : 'https')
-    const origin = process.env.NEXT_PUBLIC_SITE_URL || `${proto}://${host}`
+    // Determine site origin for redirects:
+    // IMPORTANT: Bachs API strictly requires a publicly accessible URL and rejects localhost.
+    let publicOrigin = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+    if (!publicOrigin || publicOrigin.includes('localhost') || publicOrigin.includes('127.0.0.1')) {
+      publicOrigin = 'https://chat2build.pro'
+    }
 
     const apiKey = process.env.BACHS_API_KEY?.trim()
 
@@ -33,7 +35,7 @@ export async function POST(req: NextRequest) {
       console.warn(
         '[Bachs Checkout] Warning: BACHS_API_KEY is not defined in environment variables. Providing demo redirect for preview. Add your Bachs secret key (sk_live_... or sk_sandbox_...) to .env.local to activate live payments.'
       )
-      const demoUrl = `${origin}/welcome?demo=true&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone || '')}`
+      const demoUrl = `${publicOrigin}/welcome?demo=true&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone || '')}`
       return NextResponse.json({
         checkout_url: demoUrl,
         checkout_id: 'chk_demo_' + Date.now(),
@@ -55,8 +57,8 @@ export async function POST(req: NextRequest) {
         name: name.trim(),
         email: email.trim().toLowerCase(),
       },
-      success_url: `${origin}/welcome?checkout_id={checkout_id}`,
-      cancel_url: `${origin}/#pricing`,
+      success_url: `${publicOrigin}/welcome?checkout_id={checkout_id}`,
+      cancel_url: `${publicOrigin}/registration`,
       metadata: {
         product: 'Chat2Build 4-Week AI Bootcamp',
         amount_ngn: '30000',
@@ -90,7 +92,12 @@ export async function POST(req: NextRequest) {
 
     if (!bachsRes.ok) {
       console.error('[Bachs Checkout Error]:', data)
-      const message = data.message || data.error || `Bachs API error (status ${bachsRes.status})`
+      const message =
+        data.detail ||
+        data.message ||
+        data.error ||
+        (data.errors && Array.isArray(data.errors) ? data.errors.map((e: any) => e.message).join(', ') : '') ||
+        `Bachs API error (status ${bachsRes.status})`
       return NextResponse.json({ error: message }, { status: bachsRes.status || 400 })
     }
 
