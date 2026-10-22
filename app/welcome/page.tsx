@@ -1,0 +1,314 @@
+'use client'
+
+import React, { useEffect, useState, Suspense } from 'react'
+import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import { WhatsAppIcon, WhatsAppSupport } from '../components/WhatsApp'
+
+const ASSISTANT_PHONE = '+2349166568969'
+const ASSISTANT_DIGITS = '2349166568969'
+
+function WelcomeContent() {
+  const searchParams = useSearchParams()
+
+  const [studentName, setStudentName] = useState('')
+  const [studentEmail, setStudentEmail] = useState('')
+  const [studentPhone, setStudentPhone] = useState('')
+  const [checkoutId, setCheckoutId] = useState('')
+  const [isCopied, setIsCopied] = useState(false)
+
+  useEffect(() => {
+    // Read from query parameters or session storage
+    const paramName = searchParams.get('name')
+    const paramEmail = searchParams.get('email')
+    const paramPhone = searchParams.get('phone')
+    const paramCheckout = searchParams.get('checkout_id') || searchParams.get('reference')
+
+    const storedName = typeof window !== 'undefined' ? sessionStorage.getItem('c2b_name') : null
+    const storedEmail = typeof window !== 'undefined' ? sessionStorage.getItem('c2b_email') : null
+    const storedPhone = typeof window !== 'undefined' ? sessionStorage.getItem('c2b_phone') : null
+
+    setStudentName(paramName || storedName || 'Builder')
+    setStudentEmail(paramEmail || storedEmail || '')
+    setStudentPhone(paramPhone || storedPhone || '')
+    setCheckoutId(paramCheckout || 'chk_' + Math.random().toString(36).substring(2, 10))
+  }, [searchParams])
+
+  const defaultVerificationText = `Hi Chat2Build Virtual Assistant! I just completed my ₦30,000 payment for the Chat2Build Bootcamp.\n\nName: ${studentName}\nEmail: ${studentEmail || 'N/A'}\nPhone: ${studentPhone || 'N/A'}\nReference: ${checkoutId}\n\nPlease verify my payment and add me to the bootcamp cohort group!`
+
+  const waLink = `https://wa.me/${ASSISTANT_DIGITS}?text=${encodeURIComponent(
+    defaultVerificationText
+  )}`
+
+  const handleCopyPhone = () => {
+    navigator.clipboard.writeText(ASSISTANT_PHONE)
+    setIsCopied(true)
+    setTimeout(() => setIsCopied(false), 2500)
+  }
+
+  return (
+    <div className="min-h-screen bg-[#fafafc] text-ink flex flex-col justify-between">
+      {/* Top Navigation */}
+      <header className="border-b border-line bg-white/90 backdrop-blur sticky top-0 z-30">
+        <div className="shell flex h-[72px] items-center justify-between">
+          <Link
+            href="/"
+            className="group inline-flex items-center gap-2 text-[14px] font-bold tracking-[-0.03em] text-ink"
+          >
+            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[#090BC2] text-[14px] font-black text-white shadow-[inset_0_-2px_0_rgba(0,0,0,.1)]">
+              C
+            </span>
+            <span className="font-bold text-[16px]">Chat2Build</span>
+          </Link>
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[11px] font-bold text-emerald-700">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              Registration Verified
+            </span>
+            <Link
+              href="/"
+              className="text-[12px] font-semibold text-muted hover:text-[#090BC2] transition"
+            >
+              Back to Home
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Container */}
+      <main className="shell py-12 sm:py-16 flex-1 flex flex-col items-center">
+        {/* Celebration Banner */}
+        <div className="max-w-3xl w-full text-center">
+          <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-lemon/30 text-3xl shadow-sm mb-4">
+            🎉
+          </div>
+          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#090BC2]">
+            payment confirmed • ₦30,000
+          </p>
+          <h1 className="display mt-3 text-[34px] sm:text-[46px] leading-[1.08] text-ink font-black">
+            Welcome to Chat2Build Bootcamp!
+          </h1>
+          <p className="mt-4 text-[14px] sm:text-[16px] text-muted max-w-xl mx-auto leading-relaxed">
+            Congratulations{' '}
+            <strong className="text-ink font-bold">
+              {studentName !== 'Builder' ? studentName : 'and welcome'}
+            </strong>
+            ! You have taken the decisive step to build, test, and publish real web &amp; mobile
+            apps using AI. Your seat in the upcoming 4-week cohort is reserved.
+          </p>
+        </div>
+
+        {/* PRIMARY ACTION: WhatsApp Verification Card */}
+        <div className="mt-10 max-w-2xl w-full">
+          <div className="relative overflow-hidden rounded-3xl border-2 border-[#090BC2] bg-gradient-to-b from-[#090BC2] to-[#080981] p-6 sm:p-9 text-white shadow-[0_20px_60px_-15px_rgba(9,11,194,0.35)]">
+            {/* Background pattern accents */}
+            <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
+            <div className="pointer-events-none absolute -left-16 -bottom-16 h-56 w-56 rounded-full bg-lemon/20 blur-2xl" />
+
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 rounded-full bg-lemon px-3 py-1 text-[10px] font-black uppercase tracking-wider text-[#080981]">
+                <span>⚠️</span> Action Required
+              </div>
+
+              <h2 className="mt-4 text-[24px] sm:text-[28px] font-black tracking-tight leading-snug">
+                Verify with our Virtual Assistant to join the bootcamp cohort
+              </h2>
+
+              <p className="mt-3 text-[13px] sm:text-[14px] text-white/85 leading-relaxed">
+                To receive your official onboarding package, get your student login access, and be
+                admitted into the private student WhatsApp &amp; Telegram cohort room, you must
+                verify your payment with our automated Virtual Assistant now.
+              </p>
+
+              {/* Virtual Assistant Contact Highlight */}
+              <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-4 sm:p-5">
+                <div className="flex items-center gap-3.5">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#25D366] text-white shadow-lg">
+                    <WhatsAppIcon className="h-7 w-7" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-lemon">
+                      Official Virtual Assistant
+                    </p>
+                    <p className="text-[17px] sm:text-[19px] font-black tracking-tight text-white">
+                      {ASSISTANT_PHONE}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleCopyPhone}
+                  className="rounded-lg bg-white/15 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-white/25 transition border border-white/20"
+                >
+                  {isCopied ? '✓ Copied Number' : 'Copy Number'}
+                </button>
+              </div>
+
+              {/* Prominent Verification Button */}
+              <div className="mt-6 space-y-3">
+                <a
+                  href={waLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-3 rounded-xl bg-lemon py-4 px-6 text-[14px] font-black text-[#080981] hover:brightness-105 hover:shadow-xl transition transform hover:-translate-y-0.5"
+                >
+                  <WhatsAppIcon className="h-5 w-5 text-[#080981]" />
+                  <span>Verify on WhatsApp Now ({ASSISTANT_PHONE})</span>
+                  <span className="text-lg">→</span>
+                </a>
+
+                <div className="flex items-center justify-center gap-4 text-[11px] text-white/70 pt-1">
+                  <span>📱 Instant WhatsApp response</span>
+                  <span>•</span>
+                  <a
+                    href={`tel:${ASSISTANT_PHONE}`}
+                    className="underline hover:text-white transition"
+                  >
+                    Direct Call / SMS
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* What Happens Next Section */}
+        <div className="mt-10 max-w-2xl w-full grid gap-4 sm:grid-cols-2">
+          <div className="soft-card p-5 border border-line">
+            <div className="flex items-center gap-2 text-[12px] font-black text-[#090BC2] uppercase tracking-wider">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#090BC2]/10 text-[11px]">
+                1
+              </span>
+              <span>Instant Verification</span>
+            </div>
+            <p className="mt-2 text-[12px] text-muted leading-relaxed">
+              Send the pre-filled verification message to our virtual assistant. Your Bachs
+              transaction reference will be validated automatically in under 2 minutes.
+            </p>
+          </div>
+
+          <div className="soft-card p-5 border border-line">
+            <div className="flex items-center gap-2 text-[12px] font-black text-[#090BC2] uppercase tracking-wider">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#090BC2]/10 text-[11px]">
+                2
+              </span>
+              <span>Private Cohort Room</span>
+            </div>
+            <p className="mt-2 text-[12px] text-muted leading-relaxed">
+              You will receive the exclusive invite link to join the student Telegram and WhatsApp
+              cohort workspace alongside your mentors.
+            </p>
+          </div>
+
+          <div className="soft-card p-5 border border-line">
+            <div className="flex items-center gap-2 text-[12px] font-black text-[#090BC2] uppercase tracking-wider">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#090BC2]/10 text-[11px]">
+                3
+              </span>
+              <span>Software Setup Kit</span>
+            </div>
+            <p className="mt-2 text-[12px] text-muted leading-relaxed">
+              Get immediate access to setup guides for our stack: Antigravity Agent, Stitch,
+              Firebase, Android Studio, and Flutter.
+            </p>
+          </div>
+
+          <div className="soft-card p-5 border border-line">
+            <div className="flex items-center gap-2 text-[12px] font-black text-[#090BC2] uppercase tracking-wider">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#090BC2]/10 text-[11px]">
+                4
+              </span>
+              <span>Orientation Invite</span>
+            </div>
+            <p className="mt-2 text-[12px] text-muted leading-relaxed">
+              Receive the calendar invitation for the live orientation walkthrough where we answer
+              all your questions before class starts.
+            </p>
+          </div>
+        </div>
+
+        {/* Payment Receipt / Summary Card */}
+        <div className="mt-8 max-w-2xl w-full soft-card p-6 border border-line bg-white">
+          <div className="flex items-center justify-between border-b border-line pb-4">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted">
+                Transaction Receipt
+              </p>
+              <h3 className="text-[16px] font-bold text-ink">Chat2Build 4-Week AI Bootcamp</h3>
+            </div>
+            <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-black text-emerald-800 uppercase">
+              Paid in Full
+            </span>
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-[11px]">
+            <div>
+              <p className="text-muted">Amount</p>
+              <p className="font-bold text-ink mt-0.5">₦30,000 NGN</p>
+            </div>
+            <div>
+              <p className="text-muted">Payment Method</p>
+              <p className="font-bold text-ink mt-0.5">Bachs Infrastructure</p>
+            </div>
+            <div>
+              <p className="text-muted">Student</p>
+              <p className="font-bold text-ink mt-0.5 truncate">{studentName}</p>
+            </div>
+            <div>
+              <p className="text-muted">Reference</p>
+              <p className="font-mono text-ink mt-0.5 truncate">{checkoutId}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Need Help Banner */}
+        <div className="mt-10 text-center text-[12px] text-muted">
+          <p>
+            Need help with your registration or verification? Reach us directly at{' '}
+            <a
+              href="mailto:customersupport@chat2build.io"
+              className="font-bold text-[#090BC2] underline"
+            >
+              customersupport@chat2build.io
+            </a>{' '}
+            or message our assistant at{' '}
+            <a href={waLink} className="font-bold text-[#090BC2] underline">
+              {ASSISTANT_PHONE}
+            </a>
+          </p>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-line bg-white py-6">
+        <div className="shell flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-muted">
+          <span>© 2026 Chat2Build Bootcamp. All rights reserved.</span>
+          <Link href="/" className="hover:text-ink font-semibold transition">
+            ← Return to Homepage
+          </Link>
+        </div>
+      </footer>
+
+      {/* Floating WhatsApp Support initialized with assistant phone */}
+      <WhatsAppSupport phone={ASSISTANT_PHONE} />
+    </div>
+  )
+}
+
+export default function WelcomePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#fafafc]">
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#090BC2] border-t-transparent" />
+            <p className="text-sm font-bold text-muted">Loading your welcome page...</p>
+          </div>
+        </div>
+      }
+    >
+      <WelcomeContent />
+    </Suspense>
+  )
+}

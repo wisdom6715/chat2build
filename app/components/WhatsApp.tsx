@@ -61,7 +61,7 @@ function ArrowIcon() {
 }
 
 export function WhatsAppSupport({
-  phone = '+2349024531295',
+  phone = '+2349166568969',
   defaultMessage = 'Hi Chat2Build team, I have a question about the bootcamp.',
   topics = DEFAULT_TOPICS,
 }: WhatsAppSupportProps) {
