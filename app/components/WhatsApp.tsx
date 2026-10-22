@@ -33,7 +33,11 @@ const DEFAULT_TOPICS: Topic[] = [
 ]
 
 function buildLink(phone: string, message: string) {
-  return `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`
+  let clean = phone.replace(/\D/g, '')
+  if (clean.startsWith('0') && clean.length === 11) {
+    clean = '234' + clean.slice(1)
+  }
+  return `https://wa.me/${clean}?text=${encodeURIComponent(message)}`
 }
 
 export function WhatsAppIcon({ className = 'h-5 w-5' }: { className?: string }) {
@@ -61,7 +65,7 @@ function ArrowIcon() {
 }
 
 export function WhatsAppSupport({
-  phone = '+2349166568969',
+  phone = '09139249581',
   defaultMessage = 'Hi Chat2Build team, I have a question about the bootcamp.',
   topics = DEFAULT_TOPICS,
 }: WhatsAppSupportProps) {

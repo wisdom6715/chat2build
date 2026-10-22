@@ -5,8 +5,8 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { WhatsAppIcon, WhatsAppSupport } from '../components/WhatsApp'
 
-const ASSISTANT_PHONE = '+2349166568969'
-const ASSISTANT_DIGITS = '2349166568969'
+const ASSISTANT_PHONE = '09139249581'
+const ASSISTANT_DIGITS = '2349139249581'
 
 function WelcomeContent() {
   const searchParams = useSearchParams()

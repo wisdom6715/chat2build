@@ -59,7 +59,14 @@ export async function POST(req: NextRequest) {
     }
 
     if (phone && typeof phone === 'string' && phone.trim().length > 3) {
-      payload.customer.phone_number = phone.trim()
+      let formattedPhone = phone.trim()
+      const digits = formattedPhone.replace(/\D/g, '')
+      if (digits.startsWith('0') && digits.length === 11) {
+        formattedPhone = '+234' + digits.slice(1)
+      } else if (!formattedPhone.startsWith('+') && digits.startsWith('234')) {
+        formattedPhone = '+' + digits
+      }
+      payload.customer.phone_number = formattedPhone
     }
 
     const bachsRes = await fetch(`${baseUrl}/v1/checkout-sessions`, {

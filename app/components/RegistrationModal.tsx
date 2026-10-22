@@ -256,7 +256,7 @@ export function RegistrationModal({
                 className="w-full rounded-lg border border-line px-3.5 py-2.5 text-[13px] text-ink placeholder:text-muted/60 focus:border-[#090BC2] focus:outline-none focus:ring-2 focus:ring-[#090BC2]/20"
               />
               <p className="mt-1 text-[10px] text-muted">
-                Used to verify you with our virtual assistant (+2349166568969) after payment.
+                Used to verify you with our virtual assistant (09139249581) after payment.
               </p>
             </div>
 
