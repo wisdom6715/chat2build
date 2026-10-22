@@ -3,14 +3,20 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}))
-    const { name, email, phone } = body
+    const name = (body.fullname || body.name || '').trim()
+    const email = (body.email || '').trim().toLowerCase()
+    const phone = (body.phone_number || body.phone || '').trim()
 
-    if (!email || typeof email !== 'string' || !email.includes('@')) {
+    if (!email || !email.includes('@')) {
       return NextResponse.json({ error: 'Please provide a valid email address.' }, { status: 400 })
     }
 
-    if (!name || typeof name !== 'string' || !name.trim()) {
+    if (!name) {
       return NextResponse.json({ error: 'Please provide your full name.' }, { status: 400 })
+    }
+
+    if (!phone) {
+      return NextResponse.json({ error: 'Please provide your phone / WhatsApp number.' }, { status: 400 })
     }
 
     // Determine site origin for redirects

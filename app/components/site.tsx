@@ -1,8 +1,8 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { useState } from 'react'
-import { useRegistration } from './RegistrationModal'
 
 const Arrow = ({ light = false }: { light?: boolean }) => (
   <svg aria-hidden="true" width="15" height="15" viewBox="0 0 15 15" fill="none">
@@ -33,7 +33,6 @@ const SectionLabel = ({ children, yellow = false }: { children: React.ReactNode;
 
 export function Header() {
   const [open, setOpen] = useState(false)
-  const { openRegistration } = useRegistration()
   const links = [['About', '#about'], ['Features', '#features'], ['Pricing', '#pricing'], ['FAQ', '#faq'], ['Contact', '#contact']]
   return (
     <header className="absolute inset-x-0 top-0 z-20" id="top">
@@ -41,23 +40,21 @@ export function Header() {
         <Logo />
         <nav className={`${open ? 'absolute left-6 right-6 top-[68px] flex flex-col rounded-2xl border border-line bg-white p-4 shadow-card' : 'hidden'} gap-1 md:static md:flex md:flex-row md:items-center md:border-0 md:bg-transparent md:p-0 md:shadow-none`}>
           {links.map(([label, href]) => <a key={label} href={href} onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-[14px] font-medium text-muted transition hover:bg-lavender hover:text-ink">{label}</a>)}
-          <button
-            onClick={() => {
-              setOpen(false)
-              openRegistration()
-            }}
+          <Link
+            href="/registration"
+            onClick={() => setOpen(false)}
             className="mt-2 rounded-md bg-[#090BC2] px-4 py-2.5 text-[14px] font-bold text-white transition hover:bg-[#080981] md:hidden text-center"
           >
             Register Now (₦30,000)
-          </button>
+          </Link>
         </nav>
         <div className="hidden items-center gap-4 md:flex">
-          <button
-            onClick={openRegistration}
-            className="rounded-md bg-[#090BC2] px-4 py-2.5 text-[14px] font-bold text-white transition hover:bg-[#080981] cursor-pointer"
+          <Link
+            href="/registration"
+            className="rounded-md bg-[#090BC2] px-4 py-2.5 text-[14px] font-bold text-white transition hover:bg-[#080981]"
           >
             Register Now
-          </button>
+          </Link>
         </div>
         <button aria-label="Toggle menu" className="flex h-9 w-9 items-center justify-center rounded-lg border border-line md:hidden" onClick={() => setOpen(!open)}>
           <span className="space-y-1.5"><span className="block h-px w-4 bg-ink" /><span className="block h-px w-4 bg-ink" /></span>
@@ -68,15 +65,14 @@ export function Header() {
 }
 
 export function Hero() {
-  const { openRegistration } = useRegistration()
   return (
     <section className="relative overflow-hidden bg-white pb-16 pt-36 sm:pb-24 sm:pt-44">
       <div className="shell text-center">
         <SectionLabel><Image src="/check.png" alt="Chat2Build" className="h-4 w-4 mr-2" width={50} height={50} />4-weeks bootcamp</SectionLabel>
         <h1 className="mx-auto mt-5 md:max-w-3xl text-[30px] font-semibold leading-[1.07] tracking-[-0.055em] text-[#090BC2] sm:text-[30px]">YOUR APP. <span>BUILT WITH</span><span className='bg-lemon p-1 italic '>AI</span> </h1>
         <p className="display mx-auto mt-4 max-w-3xl text-[25px] leading-[1.08] text-ink sm:text-[35px]">From idea to App Store &amp; Google Play without learning to code.</p>
-        <p className="muted-copy mx-auto mt-5 max-w-lg text-[12px] sm:text-[16px]">Learn how to build, test, and launch real web and mobile apps using<br className="hidden sm:block" /> AI-assisted software starting from zero.</p>
-        <button onClick={openRegistration} className="primary-button mt-6 cursor-pointer">Register Now (₦30,000)</button>
+        <p className="muted-copy mx-auto mt-5 max-w-lg text-[12px] sm:text-[16px]">Learn how to build, test, and launch real web and mobile apps using<br className="hidden sm:block" /> AI tools starting from zero.</p>
+        <Link href="/registration" className="primary-button mt-6">Register Now (₦30,000)</Link>
         <div className="relative mx-auto mt-14 max-w-[960px] overflow-hidden rounded-2xl border border-[#ececf5] bg-[#f8f8fc] p-3 shadow-[0_20px_70px_rgba(29,25,185,.07)] sm:mt-16 sm:p-5">
           <div className="relative aspect-[1.85] overflow-hidden rounded-xl border border-white bg-white shadow-[0_2px_12px_rgba(17,23,47,.05)]">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_55%,rgba(45,37,235,.16),transparent_22%),linear-gradient(112deg,#f9f9fc,#fff 48%,#fbfbff)]" />
@@ -148,7 +144,6 @@ export function AudienceSection() {
 const benefits = ['Guaranteed 4-week bootcamp immersion', 'Weekly 3 days live mentor Q&A & architecture teardowns', 'Step-by-step App Store & Google Play walkthrough', 'Direct 1-on-1 code debugging support', 'Lifetime curriculum updates & Recorded Class Walkthrough', 'Access to private community of builders & mentors', 'No hidden fees or extra charges', 'Active 24/7 Support tutor to guide you through the program']
 
 export function PricingSection() {
-  const { openRegistration } = useRegistration()
   return (
     <section className="border-y border-line bg-[#fcfcff]" id="pricing">
       <div className="shell section-space">
@@ -180,12 +175,12 @@ export function PricingSection() {
               </li>
             ))}
           </ul>
-          <button
-            onClick={openRegistration}
-            className="primary-button mt-6 w-full cursor-pointer font-black"
+          <Link
+            href="/registration"
+            className="primary-button mt-6 w-full font-black text-center"
           >
             Register &amp; Pay ₦30,000
-          </button>
+          </Link>
         </article>
       </div>
     </section>
@@ -215,7 +210,6 @@ export function FaqSection() {
 }
 
 export function CtaBanner() {
-  const { openRegistration } = useRegistration()
   return (
     <section className="px-4 pb-14 sm:px-6">
       <div className="noise relative mx-auto max-w-[1300px] overflow-hidden rounded-2xl bg-[url('/ctabanner.png')] bg-[#080981] bg-cover bg-center bg-no-repeat px-6 py-16 text-center text-white sm:px-12">
@@ -227,12 +221,12 @@ export function CtaBanner() {
           <p className="mx-auto mt-5 max-w-md text-[11px] leading-5 text-white/75">
             Join 378+ builders in the upcoming Chat2Build Bootcamp and launch your software into real production.
           </p>
-          <button
-            onClick={openRegistration}
-            className="mt-6 inline-flex items-center gap-2 rounded-md bg-lemon px-5 py-3 text-[11px] font-black text-[#080981] transition hover:-translate-y-0.5 cursor-pointer shadow-md"
+          <Link
+            href="/registration"
+            className="mt-6 inline-flex items-center gap-2 rounded-md bg-lemon px-5 py-3 text-[11px] font-black text-[#080981] transition hover:-translate-y-0.5 shadow-md"
           >
             Register Now (₦30,000)
-          </button>
+          </Link>
           <p className="mt-5 text-[9px] text-white/60">♙ Guaranteed Technical Support until your app is live.</p>
         </div>
       </div>
