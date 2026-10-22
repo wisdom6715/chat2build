@@ -287,11 +287,11 @@ export function RegistrationModal({
                         d="M4 12a8 8 0 018-8v8H4z"
                       />
                     </svg>
-                    <span>Connecting to Bachs...</span>
+                    <span>Processing payment...</span>
                   </>
                 ) : (
                   <>
-                    <span>Pay ₦30,000 with Bachs</span>
+                    <span>Make Payment (₦30,000)</span>
                     <span>→</span>
                   </>
                 )}

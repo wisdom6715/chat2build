@@ -3,6 +3,8 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { WhatsAppSupport } from '../components/WhatsApp'
+import { db } from '../lib/firebase'
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 
 const ASSISTANT_PHONE = '09139249581'
 
@@ -53,7 +55,22 @@ export default function RegistrationPage() {
         sessionStorage.setItem('c2b_phone', phoneNumber.trim())
       }
 
-      // 2. Call our backend to create a Bachs checkout session
+      // 2. Save student information in Firebase Firestore
+      try {
+        await addDoc(collection(db, 'registrations'), {
+          fullname: fullname.trim(),
+          email: email.trim().toLowerCase(),
+          phone_number: phoneNumber.trim(),
+          amount: 30000,
+          currency: 'NGN',
+          status: 'pending_payment',
+          createdAt: serverTimestamp(),
+        })
+      } catch (fbErr) {
+        console.warn('[Firebase save error]:', fbErr)
+      }
+
+      // 3. Call backend to create checkout session
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -67,10 +84,10 @@ export default function RegistrationPage() {
       const data = await res.json().catch(() => ({}))
 
       if (!res.ok || !data.checkout_url) {
-        throw new Error(data.error || 'Failed to initialize Bachs payment. Please try again.')
+        throw new Error(data.error || 'Failed to initialize payment. Please try again.')
       }
 
-      // 3. Redirect to Bachs hosted payment page
+      // 4. Redirect to Bachs hosted payment page
       window.location.href = data.checkout_url
     } catch (err: any) {
       console.error('[Registration Error]:', err)
@@ -269,11 +286,11 @@ export default function RegistrationPage() {
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                           </svg>
-                          <span>Connecting to Bachs...</span>
+                          <span>Processing payment...</span>
                         </>
                       ) : (
                         <>
-                          <span>Proceed to Bachs Payment (₦30,000)</span>
+                          <span>Make Payment (₦30,000)</span>
                           <span className="text-base">→</span>
                         </>
                       )}
