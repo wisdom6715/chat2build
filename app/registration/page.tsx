@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { WhatsAppSupport } from '../components/WhatsApp'
 
 const ASSISTANT_PHONE = '09139249581'
@@ -19,6 +19,7 @@ const perks = [
 ]
 
 export default function RegistrationPage() {
+  const router = useRouter()
   const [fullname, setFullname] = useState('')
   const [email, setEmail] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
@@ -98,27 +99,29 @@ export default function RegistrationPage() {
       {/* Top Header */}
       <header className="border-b border-line bg-white/95 backdrop-blur sticky top-0 z-30">
         <div className="shell flex h-[74px] items-center justify-between">
-          <Link
-            href="/"
-            className="group inline-flex items-center gap-2 text-[14px] font-bold tracking-[-0.03em] text-ink"
+          <button
+            type="button"
+            onClick={() => router.push('/')}
+            className="group inline-flex cursor-pointer items-center gap-2 text-[14px] font-bold tracking-[-0.03em] text-ink"
           >
             <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[#090BC2] text-[14px] font-black text-white shadow-[inset_0_-2px_0_rgba(0,0,0,.1)]">
               C
             </span>
             <span className="font-bold text-[16px]">Chat2Build</span>
-          </Link>
+          </button>
 
           <div className="flex items-center gap-4">
             <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-lemon/30 px-3 py-1 text-[11px] font-bold text-[#080981]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#080981]" />
               Secure 256-bit Checkout
             </span>
-            <Link
-              href="/"
-              className="text-[12px] font-semibold text-muted hover:text-[#090BC2] transition"
+            <button
+              type="button"
+              onClick={() => router.push('/')}
+              className="cursor-pointer text-[12px] font-semibold text-muted hover:text-[#090BC2] transition"
             >
               ← Back to Home
-            </Link>
+            </button>
           </div>
         </div>
       </header>

@@ -1,8 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, Suspense } from 'react'
-import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { WhatsAppIcon, WhatsAppSupport } from '../components/WhatsApp'
 
 const ASSISTANT_PHONE = '09139249581'
@@ -10,13 +9,12 @@ const ASSISTANT_DIGITS = '2349139249581'
 
 function WelcomeContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
 
   const [studentName, setStudentName] = useState('')
   const [studentEmail, setStudentEmail] = useState('')
   const [studentPhone, setStudentPhone] = useState('')
   const [checkoutId, setCheckoutId] = useState('')
-  const [isCopied, setIsCopied] = useState(false)
-
   useEffect(() => {
     // Read from query parameters or session storage
     const paramName = searchParams.get('name')
@@ -34,43 +32,36 @@ function WelcomeContent() {
     setCheckoutId(paramCheckout || 'chk_' + Math.random().toString(36).substring(2, 10))
   }, [searchParams])
 
+  useEffect(() => {
+    router.prefetch('/')
+  }, [router])
+
   const defaultVerificationText = `Hi Chat2Build Virtual Assistant! I just completed my ₦30,000 payment for the Chat2Build Bootcamp.\n\nName: ${studentName}\nEmail: ${studentEmail || 'N/A'}\nPhone: ${studentPhone || 'N/A'}\nReference: ${checkoutId}\n\nPlease add me to the official Slack channel!`
 
   const waLink = `https://wa.me/${ASSISTANT_DIGITS}?text=${encodeURIComponent(
     defaultVerificationText
   )}`
 
-  const handleCopyPhone = () => {
-    navigator.clipboard.writeText(ASSISTANT_PHONE)
-    setIsCopied(true)
-    setTimeout(() => setIsCopied(false), 2500)
-  }
-
   return (
     <div className="min-h-screen bg-[#fafafc] text-ink flex flex-col justify-between">
       {/* Top Navigation */}
       <header className="border-b border-line bg-white/90 backdrop-blur sticky top-0 z-30">
         <div className="shell flex h-[72px] items-center justify-between">
-          <Link
-            href="/"
-            className="group inline-flex items-center gap-2 text-[14px] font-bold tracking-[-0.03em] text-ink"
+          <button
+            type="button"
+            onClick={() => router.push('/')}
+            className="group inline-flex cursor-pointer items-center gap-2 text-[14px] font-bold tracking-[-0.03em] text-ink"
           >
             <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[#090BC2] text-[14px] font-black text-white shadow-[inset_0_-2px_0_rgba(0,0,0,.1)]">
               C
             </span>
             <span className="font-bold text-[16px]">Chat2Build</span>
-          </Link>
+          </button>
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[11px] font-bold text-emerald-700">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               Registration Verified
             </span>
-            <Link
-              href="/"
-              className="text-[12px] font-semibold text-muted hover:text-[#090BC2] transition"
-            >
-              Back to Home
-            </Link>
           </div>
         </div>
       </header>
@@ -110,38 +101,10 @@ function WelcomeContent() {
             <div className="pointer-events-none absolute -left-16 -bottom-16 h-56 w-56 rounded-full bg-lemon/20 blur-2xl" />
 
             <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 rounded-full bg-lemon px-3 py-1 text-[10px] font-black uppercase tracking-wider text-[#080981]">
-                <span>⚡</span> Action Required
-              </div>
 
               <h2 className="mt-4 text-[22px] sm:text-[27px] font-black tracking-tight leading-snug">
                 Message our Virtual Assistant on WhatsApp to be added to the official Slack channel
               </h2>
-
-              {/* Virtual Assistant Contact Highlight */}
-              <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-4 sm:p-5">
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#25D366] text-white shadow-lg">
-                    <WhatsAppIcon className="h-7 w-7" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-lemon">
-                      Official Virtual Assistant
-                    </p>
-                    <p className="text-[17px] sm:text-[19px] font-black tracking-tight text-white">
-                      {ASSISTANT_PHONE}
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleCopyPhone}
-                  className="rounded-lg bg-white/15 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-white/25 transition border border-white/20"
-                >
-                  {isCopied ? '✓ Copied Number' : 'Copy Number'}
-                </button>
-              </div>
 
               {/* Prominent Action Button */}
               <div className="mt-6">
@@ -153,7 +116,6 @@ function WelcomeContent() {
                 >
                   <WhatsAppIcon className="h-5 w-5 text-[#080981] shrink-0" />
                   <span>Message our Virtual Assistant on WhatsApp ({ASSISTANT_PHONE})</span>
-                  <span className="text-lg">→</span>
                 </a>
               </div>
             </div>
@@ -182,7 +144,7 @@ function WelcomeContent() {
               <span>Official Slack Channel</span>
             </div>
             <p className="mt-2 text-[12px] text-muted leading-relaxed">
-              You will receive the exclusive invite link to join the student Slack workspace alongside your mentors.
+              You will receive the exclusive invite link to join the student Slack on your email and WhatsApp. This is where you will receive all updates, resources, and support during the bootcamp.
             </p>
           </div>
 
@@ -255,7 +217,7 @@ function WelcomeContent() {
               href="mailto:customersupport@chat2build.io"
               className="font-bold text-[#090BC2] underline"
             >
-              customersupport@chat2build.io
+              customersupport@chat2build.pro
             </a>{' '}
             or message our assistant at{' '}
             <a href={waLink} className="font-bold text-[#090BC2] underline">
@@ -269,9 +231,13 @@ function WelcomeContent() {
       <footer className="border-t border-line bg-white py-6">
         <div className="shell flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-muted">
           <span>© 2026 Chat2Build Bootcamp. All rights reserved.</span>
-          <Link href="/" className="hover:text-ink font-semibold transition">
+          <button
+            type="button"
+            onClick={() => router.push('/')}
+            className="cursor-pointer hover:text-ink font-semibold transition"
+          >
             ← Return to Homepage
-          </Link>
+          </button>
         </div>
       </footer>
 
@@ -288,7 +254,7 @@ export default function WelcomePage() {
         <div className="min-h-screen flex items-center justify-center bg-[#fafafc]">
           <div className="flex flex-col items-center gap-3">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#090BC2] border-t-transparent" />
-            <p className="text-sm font-bold text-muted">Loading your welcome page...</p>
+            <p className="text-sm font-bold text-muted">Loading ...</p>
           </div>
         </div>
       }

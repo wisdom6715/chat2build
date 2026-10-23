@@ -1,8 +1,31 @@
 'use client'
 
 import Image from 'next/image'
-import Link from 'next/link'
-import { useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { useState, useRef, useEffect } from 'react'
+
+// Pricing card button: prefetches /registration and navigates there
+function useRegisterNav() {
+  const router = useRouter()
+  useEffect(() => {
+    router.prefetch('/registration')
+  }, [router])
+  return () => router.push('/registration')
+}
+
+// All other "Register" buttons: smooth-scroll to the pricing section
+function useScrollToPricing() {
+  return () => {
+    const el = document.getElementById('pricing')
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      // Keep the URL hash in sync without causing a jump
+      if (window.history?.replaceState) {
+        window.history.replaceState(null, '', '#pricing')
+      }
+    }
+  }
+}
 
 const Arrow = ({ light = false }: { light?: boolean }) => (
   <svg aria-hidden="true" width="15" height="15" viewBox="0 0 15 15" fill="none">
@@ -33,6 +56,7 @@ const SectionLabel = ({ children, yellow = false }: { children: React.ReactNode;
 
 export function Header() {
   const [open, setOpen] = useState(false)
+  const scrollToPricing = useScrollToPricing()
   const links = [['About', '#about'], ['Features', '#features'], ['Pricing', '#pricing'], ['FAQ', '#faq'], ['Contact', '#contact']]
   return (
     <header className="absolute inset-x-0 top-0 z-20" id="top">
@@ -40,29 +64,34 @@ export function Header() {
         <Logo />
         <nav className={`${open ? 'absolute left-6 right-6 top-[68px] flex flex-col rounded-2xl border border-line bg-white p-4 shadow-card' : 'hidden'} gap-1 md:static md:flex md:flex-row md:items-center md:border-0 md:bg-transparent md:p-0 md:shadow-none`}>
           {links.map(([label, href]) => <a key={label} href={href} onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-[14px] font-medium text-muted transition hover:bg-lavender hover:text-ink">{label}</a>)}
-          <Link
-            href="/registration"
-            onClick={() => setOpen(false)}
-            className="mt-2 rounded-md bg-[#090BC2] px-4 py-2.5 text-[14px] font-bold text-white transition hover:bg-[#080981] md:hidden text-center"
-          >
-            Register Now (₦30,000)
-          </Link>
-        </nav>
-        <div className="hidden items-center gap-4 md:flex">
-          <Link
-            href="/registration"
-            className="rounded-md bg-[#090BC2] px-4 py-2.5 text-[14px] font-bold text-white transition hover:bg-[#080981]"
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false)
+              scrollToPricing()
+            }}
+            className="mt-2 cursor-pointer rounded-md bg-[#090BC2] px-4 py-2.5 text-[14px] font-bold text-white transition hover:bg-[#080981] md:hidden text-center"
           >
             Register Now
-          </Link>
+          </button>
+        </nav>
+        <div className="hidden items-center gap-4 md:flex">
+          <button
+            type="button"
+            onClick={scrollToPricing}
+            className="cursor-pointer rounded-md bg-[#090BC2] px-4 py-2.5 text-[14px] font-bold text-white transition hover:bg-[#080981]"
+          >
+            Register Now
+          </button>
         </div>
         <div className="flex items-center gap-2.5 md:hidden">
-          <Link
-            href="/registration"
-            className="rounded-md bg-[#090BC2] px-3.5 py-1.5 text-[12px] font-bold text-white shadow-sm transition hover:bg-[#080981]"
+          <button
+            type="button"
+            onClick={scrollToPricing}
+            className="cursor-pointer rounded-md bg-[#090BC2] px-3.5 py-1.5 text-[12px] font-bold text-white shadow-sm transition hover:bg-[#080981]"
           >
             Register
-          </Link>
+          </button>
           <button aria-label="Toggle menu" className="flex h-9 w-9 items-center justify-center rounded-lg border border-line" onClick={() => setOpen(!open)}>
             <span className="space-y-1.5"><span className="block h-px w-4 bg-ink" /><span className="block h-px w-4 bg-ink" /></span>
           </button>
@@ -75,6 +104,7 @@ export function Header() {
 export function Hero() {
   const [isPlaying, setIsPlaying] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const scrollToPricing = useScrollToPricing()
 
   const handleTogglePlay = () => {
     if (!videoRef.current) return
@@ -92,14 +122,13 @@ export function Hero() {
       <div className="shell text-center">
         <div className="flex items-center justify-center">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-[#090BC2]/10 border border-[#090BC2]/25 px-3.5 py-1 text-[12px] font-bold text-[#090BC2]">
-            <span>🗓️</span>
             <span>Commences November 15, 2026</span>
           </span>
         </div>
         <h1 className="mx-auto mt-5 md:max-w-3xl text-[30px] font-semibold leading-[1.07] tracking-[-0.055em] text-[#090BC2] sm:text-[30px]">YOUR APP. <span>BUILT WITH</span><span className='bg-lemon p-1 italic '>AI</span> </h1>
         <p className="display mx-auto mt-4 max-w-3xl text-[25px] leading-[1.08] text-ink sm:text-[35px]">From idea to App Store &amp; Google Play without learning to code.</p>
         <p className="muted-copy mx-auto mt-5 max-w-lg text-[12px] sm:text-[16px]">Learn how to build, test, and launch real web and mobile apps using<br className="hidden sm:block" /> AI tools starting from zero.</p>
-        <Link href="/registration" className="primary-button mt-6">Register Now (₦30,000)</Link>
+        <button type="button" onClick={scrollToPricing} className="primary-button mt-6 cursor-pointer">Register Now </button>
 
         {/* Video Player Slot */}
         <div className="relative mx-auto mt-14 max-w-[960px] overflow-hidden rounded-2xl border border-[#ececf5] bg-[#0c0d1e] p-2 sm:p-3.5 shadow-[0_20px_70px_rgba(29,25,185,.12)] sm:mt-16">
@@ -159,10 +188,10 @@ export function LearningSection() {
 }
 
 const roadmap = [
-  { week: 'week 01', title: 'Idea & Design', copy: 'Scoping user stories with Claude, creating high-fidelity wireframes in v0, database schema diagrams, and product specs.', milestone: 'Interactive v0 Prototype', icon: '⌁' },
-  { week: 'week 02', title: 'Mobile Conversion', copy: 'Making web business logic into cross-platform iOS & Android apps via Expo, native camera & biometric haptics APIs.', milestone: 'First TestFlight Beta Build', icon: '◫' },
-  { week: 'week 03', title: 'Payments & Polish', copy: 'Stripe setup monetization, Apple Pay integration, offline caching, push notifications, and runtime performance optimization.', milestone: 'Verified N / S Checkout Flow', icon: '▣' },
-  { week: 'week 04', title: 'Publish & Launch', copy: 'Packaging production release builds, passing app review on Apple & Google Play, analytics setup, and Product Hunt debut.', milestone: 'Public Store Status Approval', icon: '↗' },
+  { week: 'week 01', title: 'Idea & Design', copy: 'Scoping user stories with Claude, creating high-fidelity wireframes in Stitch, database schema, product specs and connecting MCPs.', milestone: 'Interactive fully deployed Web application ', icon: '⌁' },
+  { week: 'week 02', title: 'Mobile Conversion', copy: 'building Mobile Apps into cross-platform iOS & Android apps using Flutter', milestone: 'First TestFlight Beta Build', icon: '◫' },
+  { week: 'week 03', title: 'Payments & Polish', copy: 'Setup monetization, Apple Pay integration, offline caching, push notifications, runtime performance optimization, real way to make money with what you build', milestone: 'Verified N / S Checkout Flow', icon: '▣' },
+  { week: 'week 04', title: 'Publish & Launch', copy: 'Packaging production release builds, passing app review on Apple & Google Play, and analytics setup..', milestone: 'Public Store Status Approval', icon: '↗' },
 ]
 
 export function RoadmapSection() {
@@ -195,13 +224,15 @@ const benefits = [
 ]
 
 export function PricingSection() {
+  // This is the ONLY register button that goes to the registration page
+  const goRegister = useRegisterNav()
   return (
     <section className="border-y border-line bg-[#fcfcff]" id="pricing">
       <div className="shell section-space">
         <div className="mx-auto max-w-2xl text-center">
           <SectionLabel>register now</SectionLabel>
           <h2 className="display mt-5 text-[31px] leading-none text-ink sm:text-[39px]">Get Started with our Recommended Plan</h2>
-          <p className="muted-copy mt-4">Less than 5% of what agencies charge for a preliminary prototype.</p>
+          <p className="muted-copy mt-4">Less than 5% of what developers charge to build your App</p>
         </div>
         <article className="relative mx-auto mt-10 max-w-[360px] rounded-2xl border-2 border-[#080981] bg-white p-5 shadow-[0_18px_40px_rgba(23,18,198,.12)] sm:p-6">
           <span className="absolute -right-1 -top-3 rounded-full bg-lemon px-3 py-1 text-[6px] font-black uppercase tracking-wider text-ink">
@@ -214,7 +245,6 @@ export function PricingSection() {
             <span className="mb-1 text-[10px] text-muted">one-time payment</span>
           </div>
           <div className="mt-1 flex items-center gap-1.5">
-            <span className="rounded bg-lemon/40 px-1.5 py-0.5 text-[9px] font-bold text-[#080981]">⚡ Powered by Bachs</span>
             <span className="text-[10px] text-muted">Card, Transfer, Crypto</span>
           </div>
           <p className="mt-2 text-[10px] text-muted">All-inclusive package with zero hidden charges.</p>
@@ -226,12 +256,13 @@ export function PricingSection() {
               </li>
             ))}
           </ul>
-          <Link
-            href="/registration"
-            className="primary-button mt-6 w-full font-black text-center"
+          <button
+            type="button"
+            onClick={goRegister}
+            className="primary-button mt-6 w-full cursor-pointer font-black text-center"
           >
             Register &amp; Pay ₦30,000
-          </Link>
+          </button>
         </article>
       </div>
     </section>
@@ -268,7 +299,7 @@ export function TeamSection() {
           <article className="group overflow-hidden rounded-2xl border border-line bg-white shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-xl">
             <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#e8e9f5]">
               <Image
-                src="/olayiwola-ibrahim.jpg"
+                src="/olayiwola-ibrahim.png"
                 alt="Olayiwola Ibrahim - Founder & Lead Tutor"
                 fill
                 sizes="(max-width: 640px) 100vw, 340px"
@@ -328,6 +359,7 @@ export function FaqSection() {
 }
 
 export function CtaBanner() {
+  const scrollToPricing = useScrollToPricing()
   return (
     <section className="px-4 pb-14 sm:px-6">
       <div className="noise relative mx-auto max-w-[1300px] overflow-hidden rounded-2xl bg-[url('/ctabanner.png')] bg-[#080981] bg-cover bg-center bg-no-repeat px-6 py-16 text-center text-white sm:px-12">
@@ -339,12 +371,13 @@ export function CtaBanner() {
           <p className="mx-auto mt-5 max-w-md text-[11px] leading-5 text-white/75">
             Join 378+ builders in the upcoming Chat2Build Bootcamp commencing November 15, 2026 and launch your software into real production.
           </p>
-          <Link
-            href="/registration"
-            className="mt-6 inline-flex items-center gap-2 rounded-md bg-lemon px-5 py-3 text-[11px] font-black text-[#080981] transition hover:-translate-y-0.5 shadow-md"
+          <button
+            type="button"
+            onClick={scrollToPricing}
+            className="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-md bg-lemon px-5 py-3 text-[11px] font-black text-[#080981] transition hover:-translate-y-0.5 shadow-md"
           >
-            Register Now (₦30,000)
-          </Link>
+            Register Now
+          </button>
           <p className="mt-5 text-[9px] text-white/60">♙ Guaranteed Technical Support until your app is live.</p>
         </div>
       </div>

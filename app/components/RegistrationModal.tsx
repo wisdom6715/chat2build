@@ -1,6 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { loadBachs } from '@bachs/js'
 
 type RegistrationContextType = {
@@ -38,11 +39,17 @@ export function RegistrationModal({
   isOpen: boolean
   onClose: () => void
 }) {
+  const router = useRouter()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+
+  // Prefetch the welcome page while the modal is open so the redirect after payment is instant
+  useEffect(() => {
+    if (isOpen) router.prefetch('/welcome')
+  }, [isOpen, router])
 
   // Close on escape
   useEffect(() => {
@@ -79,10 +86,14 @@ export function RegistrationModal({
 
     try {
       // Store student details in session storage for personalized welcome page
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem('c2b_name', name.trim())
-        sessionStorage.setItem('c2b_email', email.trim())
-        sessionStorage.setItem('c2b_phone', phone.trim())
+      try {
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          sessionStorage.setItem('c2b_name', name.trim())
+          sessionStorage.setItem('c2b_email', email.trim())
+          sessionStorage.setItem('c2b_phone', phone.trim())
+        }
+      } catch (storageErr) {
+        // Non-critical: ignore storage restrictions (e.g. iOS private browsing)
       }
 
       const res = await fetch('/api/checkout', {
@@ -104,10 +115,23 @@ export function RegistrationModal({
       const checkoutUrl = data.checkout_url
       const checkoutId = data.checkout_id || ''
 
-      // If demo mode or redirect flag, proceed directly to URL
+      // If demo mode or redirect flag, proceed directly to URL (external, so a full navigation)
       if (data.demo) {
-        window.location.href = checkoutUrl
+        window.location.assign(checkoutUrl)
         return
+      }
+
+      // Internal navigation to the welcome page via the Next router (guarded so it only fires once)
+      let redirected = false
+      const goToWelcome = () => {
+        if (redirected) return
+        redirected = true
+        onClose()
+        router.push(
+          `/welcome?checkout_id=${encodeURIComponent(checkoutId)}&name=${encodeURIComponent(
+            name.trim()
+          )}&email=${encodeURIComponent(email.trim())}&phone=${encodeURIComponent(phone.trim())}`
+        )
       }
 
       // Attempt to load Bachs overlay checkout
@@ -117,9 +141,7 @@ export function RegistrationModal({
         bachs.Initialize({
           onEvent: (event) => {
             if (event.type === 'checkout.completed') {
-              window.location.href = `/welcome?checkout_id=${checkoutId}&name=${encodeURIComponent(
-                name.trim()
-              )}&email=${encodeURIComponent(email.trim())}&phone=${encodeURIComponent(phone.trim())}`
+              goToWelcome()
             }
           },
         })
@@ -128,9 +150,7 @@ export function RegistrationModal({
           checkoutUrl,
           onEvent: (event) => {
             if (event.type === 'checkout.completed') {
-              window.location.href = `/welcome?checkout_id=${checkoutId}&name=${encodeURIComponent(
-                name.trim()
-              )}&email=${encodeURIComponent(email.trim())}&phone=${encodeURIComponent(phone.trim())}`
+              goToWelcome()
             }
           },
         })
@@ -139,8 +159,8 @@ export function RegistrationModal({
         onClose()
       } catch (overlayErr) {
         console.warn('[Bachs Overlay Error, falling back to redirect]:', overlayErr)
-        // Fallback: direct browser redirect to hosted checkout
-        window.location.href = checkoutUrl
+        // Fallback: direct browser redirect to hosted checkout (external)
+        window.location.assign(checkoutUrl)
       }
     } catch (err: any) {
       console.error(err)
@@ -173,9 +193,10 @@ export function RegistrationModal({
               </h2>
             </div>
             <button
+              type="button"
               onClick={onClose}
               disabled={loading}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-line text-muted hover:bg-lavender hover:text-ink transition"
+              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-line text-muted hover:bg-lavender hover:text-ink transition"
               aria-label="Close registration modal"
             >
               ✕
@@ -198,12 +219,6 @@ export function RegistrationModal({
                 </span>
                 <span className="text-[11px] text-muted">one-time</span>
               </div>
-            </div>
-            <div className="text-right">
-              <span className="inline-flex items-center rounded-md bg-[#090BC2]/10 px-2 py-1 text-[10px] font-bold text-[#090BC2]">
-                ⚡ Bachs Pay
-              </span>
-              <p className="mt-1 text-[9px] text-muted">Card, Transfer &amp; Crypto</p>
             </div>
           </div>
 
@@ -255,16 +270,13 @@ export function RegistrationModal({
                 placeholder="e.g. 08012345678 or +234..."
                 className="w-full rounded-lg border border-line px-3.5 py-2.5 text-[13px] text-ink placeholder:text-muted/60 focus:border-[#090BC2] focus:outline-none focus:ring-2 focus:ring-[#090BC2]/20"
               />
-              <p className="mt-1 text-[10px] text-muted">
-                Used to verify you with our virtual assistant (09139249581) after payment.
-              </p>
             </div>
 
             <div className="pt-2">
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#090BC2] py-3 text-[13px] font-black text-white hover:bg-[#080981] transition shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#090BC2] py-3 text-[13px] font-black text-white hover:bg-[#080981] transition shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
@@ -292,7 +304,6 @@ export function RegistrationModal({
                 ) : (
                   <>
                     <span>Make Payment (₦30,000)</span>
-                    <span>→</span>
                   </>
                 )}
               </button>
