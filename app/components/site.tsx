@@ -2,14 +2,11 @@
 
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 
 // Pricing card button: prefetches /registration and navigates there
 function useRegisterNav() {
   const router = useRouter()
-  useEffect(() => {
-    router.push('/registration')
-  }, [router])
   return () => router.push('/registration')
 }
 
@@ -19,10 +16,6 @@ function useScrollToPricing() {
     const el = document.getElementById('pricing')
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      // Keep the URL hash in sync without causing a jump
-      if (window.history?.replaceState) {
-        window.history.replaceState(null, '', '#pricing')
-      }
     }
   }
 }

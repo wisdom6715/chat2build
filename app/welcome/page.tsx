@@ -15,9 +15,6 @@ function WelcomeContent() {
   const [studentEmail, setStudentEmail] = useState('')
   const [studentPhone, setStudentPhone] = useState('')
   const [checkoutId, setCheckoutId] = useState('')
-  const [verifying, setVerifying] = useState(true)
-  const [verifyStatus, setVerifyStatus] = useState<'success' | 'warning' | 'error'>('success')
-
   useEffect(() => {
     // Read from query parameters or session storage
     const paramName = searchParams.get('name')
@@ -29,51 +26,10 @@ function WelcomeContent() {
     const storedEmail = typeof window !== 'undefined' ? sessionStorage.getItem('c2b_email') : null
     const storedPhone = typeof window !== 'undefined' ? sessionStorage.getItem('c2b_phone') : null
 
-    const resolvedName = paramName || storedName || 'Builder'
-    const resolvedEmail = paramEmail || storedEmail || ''
-    const resolvedPhone = paramPhone || storedPhone || ''
-    const resolvedCheckout = paramCheckout || ''
-
-    setStudentName(resolvedName)
-    setStudentEmail(resolvedEmail)
-    setStudentPhone(resolvedPhone)
-    setCheckoutId(resolvedCheckout || 'chk_' + Math.random().toString(36).substring(2, 10))
-
-    // Server-side verification with Bachs API
-    if (resolvedCheckout) {
-      setVerifying(true)
-      fetch('/api/checkout/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          checkout_id: resolvedCheckout,
-          name: resolvedName,
-          email: resolvedEmail,
-          phone: resolvedPhone,
-        }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success || data.verified || data.alreadyRecorded) {
-            setVerifyStatus('success')
-            if (data.student?.fullname) setStudentName(data.student.fullname)
-            if (data.student?.email) setStudentEmail(data.student.email)
-            if (data.student?.phone_number) setStudentPhone(data.student.phone_number)
-          } else {
-            console.warn('[Verification warning]:', data.error)
-            setVerifyStatus('warning')
-          }
-        })
-        .catch((err) => {
-          console.error('[Verification fetch error]:', err)
-          setVerifyStatus('warning')
-        })
-        .finally(() => {
-          setVerifying(false)
-        })
-    } else {
-      setVerifying(false)
-    }
+    setStudentName(paramName || storedName || 'Builder')
+    setStudentEmail(paramEmail || storedEmail || '')
+    setStudentPhone(paramPhone || storedPhone || '')
+    setCheckoutId(paramCheckout || 'chk_' + Math.random().toString(36).substring(2, 10))
   }, [searchParams])
 
   useEffect(() => {
@@ -102,22 +58,10 @@ function WelcomeContent() {
             <span className="font-bold text-[16px]">Chat2Build</span>
           </button>
           <div className="flex items-center gap-3">
-            {verifying ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-200 px-3 py-1 text-[11px] font-bold text-blue-700">
-                <span className="h-2 w-2 rounded-full bg-blue-500 animate-ping" />
-                Confirming Bachs Payment...
-              </span>
-            ) : verifyStatus === 'success' ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[11px] font-bold text-emerald-700">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                Payment Confirmed &amp; Saved
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-[11px] font-bold text-amber-700">
-                <span className="h-2 w-2 rounded-full bg-amber-500" />
-                Payment Pending Confirmation
-              </span>
-            )}
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[11px] font-bold text-emerald-700">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              Registration Verified
+            </span>
           </div>
         </div>
       </header>
@@ -157,6 +101,7 @@ function WelcomeContent() {
             <div className="pointer-events-none absolute -left-16 -bottom-16 h-56 w-56 rounded-full bg-lemon/20 blur-2xl" />
 
             <div className="relative z-10">
+
               <h2 className="mt-4 text-[22px] sm:text-[27px] font-black tracking-tight leading-snug">
                 Message our Virtual Assistant on WhatsApp to be added to the official Slack channel
               </h2>
@@ -173,21 +118,6 @@ function WelcomeContent() {
                   <span>Message our Virtual Assistant on WhatsApp ({ASSISTANT_PHONE})</span>
                 </a>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Anti-impersonation / Paid-Access Disclaimer */}
-        <div className="mt-6 max-w-2xl w-full rounded-2xl border border-amber-200 bg-amber-50/90 p-5 text-amber-950">
-          <div className="flex items-start gap-3.5">
-            <span className="text-xl shrink-0 mt-0.5">🛡️</span>
-            <div>
-              <h3 className="text-[13px] font-bold text-amber-900">
-                Notice Regarding Access &amp; Slack Channel Admittance
-              </h3>
-              <p className="mt-1 text-[12px] leading-relaxed text-amber-800">
-                We don&apos;t mean to inconvenience you, but we want to make sure only people who paid have access to the value, proprietary templates, and live mentor teardowns. Every registered builder is verified in our database so that no multiple individuals can impersonate a single seat.
-              </p>
             </div>
           </div>
         </div>

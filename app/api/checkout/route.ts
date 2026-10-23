@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { db } from '../../lib/firebase'
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 
 export async function POST(req: NextRequest) {
   try {
@@ -109,7 +111,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: message }, { status: bachsRes.status || 400 })
     }
 
-    // Do NOT write to DB here — payment confirmation occurs on the server side via verify or webhook!
+    // Save student registration in Firebase Firestore
+    try {
+      await addDoc(collection(db, 'registrations'), {
+        fullname: name,
+        email: email,
+        phone_number: phone,
+        amount: 30000,
+        currency: 'NGN',
+        status: 'pending_payment',
+        checkout_id: data.checkout_id || null,
+        createdAt: serverTimestamp(),
+      })
+      console.log(`[Firebase] Successfully saved registration for ${email}`)
+    } catch (fbErr) {
+      console.error('[Firebase] Failed to save registration:', fbErr)
+    }
+
     return NextResponse.json({
       checkout_url: data.checkout_url,
       checkout_id: data.checkout_id,
