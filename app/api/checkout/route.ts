@@ -22,9 +22,17 @@ export async function POST(req: NextRequest) {
     }
 
     // Determine site origin for redirects:
-    // IMPORTANT: Bachs API strictly requires a publicly accessible URL and rejects localhost.
+    // IMPORTANT: Bachs API strictly requires a publicly accessible URL and rejects localhost or private IPs.
     let publicOrigin = process.env.NEXT_PUBLIC_SITE_URL?.trim()
-    if (!publicOrigin || publicOrigin.includes('localhost') || publicOrigin.includes('127.0.0.1')) {
+    if (
+      !publicOrigin ||
+      publicOrigin.includes('localhost') ||
+      publicOrigin.includes('127.0.0.1') ||
+      publicOrigin.includes('192.168.') ||
+      publicOrigin.includes('10.') ||
+      publicOrigin.includes('172.') ||
+      !publicOrigin.startsWith('http')
+    ) {
       publicOrigin = 'https://chat2build.pro'
     }
 
@@ -69,11 +77,13 @@ export async function POST(req: NextRequest) {
     }
 
     if (phone && typeof phone === 'string' && phone.trim().length > 3) {
-      let formattedPhone = phone.trim()
-      const digits = formattedPhone.replace(/\D/g, '')
+      const digits = phone.replace(/\D/g, '')
+      let formattedPhone = '+' + digits
       if (digits.startsWith('0') && digits.length === 11) {
         formattedPhone = '+234' + digits.slice(1)
-      } else if (!formattedPhone.startsWith('+') && digits.startsWith('234')) {
+      } else if (digits.length === 10) {
+        formattedPhone = '+234' + digits
+      } else if (digits.startsWith('234')) {
         formattedPhone = '+' + digits
       }
       payload.customer.phone_number = formattedPhone

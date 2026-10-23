@@ -56,9 +56,17 @@ export function Header() {
             Register Now
           </Link>
         </div>
-        <button aria-label="Toggle menu" className="flex h-9 w-9 items-center justify-center rounded-lg border border-line md:hidden" onClick={() => setOpen(!open)}>
-          <span className="space-y-1.5"><span className="block h-px w-4 bg-ink" /><span className="block h-px w-4 bg-ink" /></span>
-        </button>
+        <div className="flex items-center gap-2.5 md:hidden">
+          <Link
+            href="/registration"
+            className="rounded-md bg-[#090BC2] px-3.5 py-1.5 text-[12px] font-bold text-white shadow-sm transition hover:bg-[#080981]"
+          >
+            Register
+          </Link>
+          <button aria-label="Toggle menu" className="flex h-9 w-9 items-center justify-center rounded-lg border border-line" onClick={() => setOpen(!open)}>
+            <span className="space-y-1.5"><span className="block h-px w-4 bg-ink" /><span className="block h-px w-4 bg-ink" /></span>
+          </button>
+        </div>
       </div>
     </header>
   )

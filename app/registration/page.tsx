@@ -3,8 +3,6 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { WhatsAppSupport } from '../components/WhatsApp'
-import { db } from '../lib/firebase'
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 
 const ASSISTANT_PHONE = '09139249581'
 
@@ -26,22 +24,28 @@ export default function RegistrationPage() {
   const [phoneNumber, setPhoneNumber] = useState('')
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [checkoutUrl, setCheckoutUrl] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (loading) return
     setErrorMessage('')
 
-    if (!fullname.trim()) {
+    const cleanName = fullname.trim()
+    const cleanEmail = email.trim().toLowerCase()
+    const cleanPhone = phoneNumber.trim()
+
+    if (!cleanName) {
       setErrorMessage('Please enter your full name.')
       return
     }
 
-    if (!email.trim() || !email.includes('@')) {
+    if (!cleanEmail || !cleanEmail.includes('@')) {
       setErrorMessage('Please enter a valid email address.')
       return
     }
 
-    if (!phoneNumber.trim()) {
+    if (!cleanPhone) {
       setErrorMessage('Please enter your phone / WhatsApp number.')
       return
     }
@@ -49,36 +53,25 @@ export default function RegistrationPage() {
     setLoading(true)
 
     try {
-      // 1. Save student details locally for the welcome page
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem('c2b_name', fullname.trim())
-        sessionStorage.setItem('c2b_email', email.trim())
-        sessionStorage.setItem('c2b_phone', phoneNumber.trim())
-      }
-
-      // 2. Save student information in Firebase Firestore
+      // 1. Save student details safely for welcome page (safe in iOS private browsing)
       try {
-        await addDoc(collection(db, 'registrations'), {
-          fullname: fullname.trim(),
-          email: email.trim().toLowerCase(),
-          phone_number: phoneNumber.trim(),
-          amount: 30000,
-          currency: 'NGN',
-          status: 'pending_payment',
-          createdAt: serverTimestamp(),
-        })
-      } catch (fbErr) {
-        console.warn('[Firebase save error]:', fbErr)
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          sessionStorage.setItem('c2b_name', cleanName)
+          sessionStorage.setItem('c2b_email', cleanEmail)
+          sessionStorage.setItem('c2b_phone', cleanPhone)
+        }
+      } catch (storageErr) {
+        // Non-critical: ignore quota restrictions in private browsing
       }
 
-      // 3. Call backend to create checkout session
+      // 2. Call backend to create Bachs checkout session & persist in Firebase Firestore
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fullname: fullname.trim(),
-          email: email.trim(),
-          phone_number: phoneNumber.trim(),
+          fullname: cleanName,
+          email: cleanEmail,
+          phone_number: cleanPhone,
         }),
       })
 
@@ -88,8 +81,11 @@ export default function RegistrationPage() {
         throw new Error(data.error || 'Failed to initialize payment. Please try again.')
       }
 
-      // 4. Redirect to Bachs hosted payment page
-      window.location.href = data.checkout_url
+      setCheckoutUrl(data.checkout_url)
+
+      // 3. Immediately redirect to Bachs hosted checkout
+      // Using assign for maximum compatibility across mobile Safari, Android Chrome, and in-app webviews
+      window.location.assign(data.checkout_url)
     } catch (err: any) {
       console.error('[Registration Error]:', err)
       setErrorMessage(err.message || 'Something went wrong. Please check your connection and try again.')
@@ -282,26 +278,38 @@ export default function RegistrationPage() {
 
                   {/* Submit Button */}
                   <div className="pt-2">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#090BC2] py-3.5 px-6 text-[13px] font-black text-white hover:bg-[#080981] transition shadow-md hover:shadow-lg disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
-                    >
-                      {loading ? (
-                        <>
-                          <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                          </svg>
-                          <span>Processing payment...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Make Payment (₦30,000)</span>
-                          <span className="text-base">→</span>
-                        </>
-                      )}
-                    </button>
+                    {checkoutUrl ? (
+                      <a
+                        href={checkoutUrl}
+                        className="w-full flex items-center justify-center gap-2 rounded-xl bg-lemon py-3.5 px-6 text-[13px] font-black text-[#080981] hover:brightness-105 transition shadow-md animate-pulse text-center"
+                      >
+                        <span>Redirecting... Tap here if not redirected automatically</span>
+                        <span className="text-base">→</span>
+                      </a>
+                    ) : (
+                      <button
+                        type="submit"
+                        aria-disabled={loading}
+                        className={`w-full flex items-center justify-center gap-2 rounded-xl bg-[#090BC2] py-3.5 px-6 text-[13px] font-black text-white hover:bg-[#080981] transition shadow-md hover:shadow-lg ${
+                          loading ? 'opacity-80 pointer-events-none' : 'cursor-pointer'
+                        }`}
+                      >
+                        {loading ? (
+                          <>
+                            <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                            </svg>
+                            <span>Processing payment...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Make Payment (₦30,000)</span>
+                            <span className="text-base">→</span>
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
                 </form>
 
