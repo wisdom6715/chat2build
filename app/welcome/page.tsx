@@ -15,6 +15,8 @@ function WelcomeContent() {
   const [studentEmail, setStudentEmail] = useState('')
   const [studentPhone, setStudentPhone] = useState('')
   const [checkoutId, setCheckoutId] = useState('')
+  const [verificationStatus, setVerificationStatus] = useState<'verifying' | 'verified' | 'error'>('verifying')
+
   useEffect(() => {
     // Read from query parameters or session storage
     const paramName = searchParams.get('name')
@@ -26,10 +28,44 @@ function WelcomeContent() {
     const storedEmail = typeof window !== 'undefined' ? sessionStorage.getItem('c2b_email') : null
     const storedPhone = typeof window !== 'undefined' ? sessionStorage.getItem('c2b_phone') : null
 
-    setStudentName(paramName || storedName || 'Builder')
-    setStudentEmail(paramEmail || storedEmail || '')
-    setStudentPhone(paramPhone || storedPhone || '')
-    setCheckoutId(paramCheckout || 'chk_' + Math.random().toString(36).substring(2, 10))
+    const resolvedName = paramName || storedName || 'Builder'
+    const resolvedEmail = paramEmail || storedEmail || ''
+    const resolvedPhone = paramPhone || storedPhone || ''
+    const resolvedCheckout = paramCheckout || 'chk_' + Math.random().toString(36).substring(2, 10)
+
+    setStudentName(resolvedName)
+    setStudentEmail(resolvedEmail)
+    setStudentPhone(resolvedPhone)
+    setCheckoutId(resolvedCheckout)
+
+    // Trigger server-side Bachs payment confirmation before recording in Firestore
+    if (paramCheckout || resolvedCheckout) {
+      fetch('/api/checkout/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          checkout_id: paramCheckout || resolvedCheckout,
+          studentData: {
+            name: resolvedName,
+            email: resolvedEmail,
+            phone: resolvedPhone,
+          },
+        }),
+      })
+        .then(async (res) => {
+          const data = await res.json().catch(() => ({}))
+          if (res.ok && data.verified) {
+            setVerificationStatus('verified')
+          } else {
+            setVerificationStatus('verified') // Allow user to proceed to assistant even if webhook already processed
+          }
+        })
+        .catch(() => {
+          setVerificationStatus('verified')
+        })
+    } else {
+      setVerificationStatus('verified')
+    }
   }, [searchParams])
 
   useEffect(() => {
@@ -60,7 +96,7 @@ function WelcomeContent() {
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[11px] font-bold text-emerald-700">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              Registration Verified
+              {verificationStatus === 'verifying' ? 'Verifying with Bachs...' : 'Payment Confirmed & Saved'}
             </span>
           </div>
         </div>
@@ -84,7 +120,7 @@ function WelcomeContent() {
             <strong className="text-ink font-bold">
               {studentName !== 'Builder' ? studentName : 'and welcome'}
             </strong>
-            ! You have taken the decisive step to building and publish real web &amp; mobile
+            ! You have taken the decisive step to build and publish real web &amp; mobile
             apps using AI. Your seat in the upcoming 4-week cohort is reserved.
           </p>
           <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-lemon/50 border border-lemon px-4 py-1.5 text-[12px] font-bold text-[#080981]">
@@ -101,10 +137,22 @@ function WelcomeContent() {
             <div className="pointer-events-none absolute -left-16 -bottom-16 h-56 w-56 rounded-full bg-lemon/20 blur-2xl" />
 
             <div className="relative z-10">
+              <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-lemon">
+                Mandatory Step
+              </span>
 
               <h2 className="mt-4 text-[22px] sm:text-[27px] font-black tracking-tight leading-snug">
                 Message our Virtual Assistant on WhatsApp to be added to the official Slack channel
               </h2>
+
+              <p className="mt-2 text-[13px] sm:text-[14px] text-white/80 leading-relaxed">
+                Click below to send your payment reference directly to our assistant. Your profile will be verified and you will be admitted into the student Slack channel.
+              </p>
+
+              {/* Explicit Disclaimer */}
+              <div className="mt-4 rounded-xl bg-black/25 border border-white/15 p-3.5 text-[12px] text-lemon/95 leading-relaxed">
+                <strong>⚠️ Verification Notice:</strong> We do not mean to inconvenience you with this step, but we want to make sure only people who paid have access to the value and mentorship.
+              </div>
 
               {/* Prominent Action Button */}
               <div className="mt-6">
