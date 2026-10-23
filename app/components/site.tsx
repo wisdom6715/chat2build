@@ -4,11 +4,6 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useState, useRef } from 'react'
 
-// Pricing card button: prefetches /registration and navigates there
-function useRegisterNav() {
-  const router = useRouter()
-  return () => router.push('/registration')
-}
 
 // All other "Register" buttons: smooth-scroll to the pricing section
 function useScrollToPricing() {
@@ -48,6 +43,7 @@ const SectionLabel = ({ children, yellow = false }: { children: React.ReactNode;
 )
 
 export function Header() {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const scrollToPricing = useScrollToPricing()
   const links = [['About', '#about'], ['Features', '#features'], ['Pricing', '#pricing'], ['FAQ', '#faq'], ['Contact', '#contact']]
@@ -71,7 +67,7 @@ export function Header() {
         <div className="hidden items-center gap-4 md:flex">
           <button
             type="button"
-            onClick={scrollToPricing}
+            onClick={() => router.push('/registration')}
             className="cursor-pointer rounded-md bg-[#090BC2] px-4 py-2.5 text-[14px] font-bold text-white transition hover:bg-[#080981]"
           >
             Register Now
@@ -218,7 +214,8 @@ const benefits = [
 
 export function PricingSection() {
   // This is the ONLY register button that goes to the registration page
-  const goRegister = useRegisterNav()
+  const router = useRouter()
+
   return (
     <section className="border-y border-line bg-[#fcfcff]" id="pricing">
       <div className="shell section-space">
@@ -251,7 +248,7 @@ export function PricingSection() {
           </ul>
           <button
             type="button"
-            onClick={goRegister}
+            onClick={() => router.push('/registration')}
             className="primary-button mt-6 w-full cursor-pointer font-black text-center"
           >
             Register Pay ₦30,000

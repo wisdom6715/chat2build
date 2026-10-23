@@ -105,9 +105,12 @@ export function WhatsAppSupport({
   if (!phone.replace(/\D/g, '')) return null
 
   return (
+    // The container only ever contains the launcher button in normal flow, so it is exactly
+    // the size of the button. The panel is absolutely positioned above it, so it takes up
+    // no space (and blocks no taps) while closed.
     <div
       ref={rootRef}
-      className="fixed right-4 z-50 flex flex-col items-end gap-3 bottom-[max(1rem,env(safe-area-inset-bottom))] sm:right-6 sm:bottom-[max(1.5rem,env(safe-area-inset-bottom))]"
+      className="fixed right-4 z-50 bottom-[max(1rem,env(safe-area-inset-bottom))] sm:right-6 sm:bottom-[max(1.5rem,env(safe-area-inset-bottom))]"
     >
       {/* Panel */}
       <div
@@ -115,9 +118,11 @@ export function WhatsAppSupport({
         role="dialog"
         aria-label="Chat with Chat2Build support on WhatsApp"
         className={[
-          'noise relative w-[min(330px,calc(100vw-2rem))] origin-bottom-right overflow-hidden rounded-2xl border border-white/10 bg-[#080981] p-5 text-white shadow-[0_24px_60px_-20px_rgba(8,9,129,.75)]',
+          'noise absolute bottom-full right-0 mb-3 w-[min(330px,calc(100vw-2rem))] origin-bottom-right overflow-hidden rounded-2xl border border-white/10 bg-[#080981] p-5 text-white shadow-[0_24px_60px_-20px_rgba(8,9,129,.75)]',
           'transition-[opacity,transform,visibility] duration-200 ease-out motion-reduce:transition-none',
-          open ? 'visible translate-y-0 scale-100 opacity-100' : 'invisible translate-y-2 scale-95 opacity-0',
+          open
+            ? 'pointer-events-auto visible translate-y-0 scale-100 opacity-100'
+            : 'pointer-events-none invisible translate-y-2 scale-95 opacity-0',
         ].join(' ')}
       >
         {/* Same orbit rings as the CTA banner */}

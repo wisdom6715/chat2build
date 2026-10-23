@@ -331,8 +331,8 @@ export default function RegistrationPage() {
           <span>© 2026 Chat2Build Bootcamp. All rights reserved.</span>
           <span>
             Need help? Contact{' '}
-            <a href="mailto:customersupport@chat2build.io" className="underline font-bold text-[#090BC2]">
-              customersupport@chat2build.io
+            <a href="mailto:customersupport@chat2build.pro" className="underline font-bold text-[#090BC2]">
+              customersupport@chat2build.pro
             </a>
           </span>
         </div>
