@@ -8,7 +8,7 @@ import { useState, useRef, useEffect } from 'react'
 function useRegisterNav() {
   const router = useRouter()
   useEffect(() => {
-    router.prefetch('/registration')
+    router.push('/registration')
   }, [router])
   return () => router.push('/registration')
 }
@@ -261,7 +261,7 @@ export function PricingSection() {
             onClick={goRegister}
             className="primary-button mt-6 w-full cursor-pointer font-black text-center"
           >
-            Register &amp; Pay ₦30,000
+            Register Pay ₦30,000
           </button>
         </article>
       </div>
