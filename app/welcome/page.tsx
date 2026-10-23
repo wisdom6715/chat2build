@@ -4,8 +4,8 @@ import React, { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { WhatsAppIcon, WhatsAppSupport } from '../components/WhatsApp'
 
-const ASSISTANT_PHONE = '09139249581'
-const ASSISTANT_DIGITS = '2349139249581'
+const ASSISTANT_PHONE = process.env.NEXT_PUBLIC_VIRTUAL_ASSISTANT_PHONE || '09139249580'
+const ASSISTANT_DIGITS = '234' + ASSISTANT_PHONE.replace(/\D/g, '').replace(/^0/, '')
 
 function WelcomeContent() {
   const searchParams = useSearchParams()

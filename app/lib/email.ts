@@ -1,7 +1,7 @@
 import { Resend } from 'resend'
 import nodemailer from 'nodemailer'
 
-const ASSISTANT_PHONE = process.env.NEXT_PUBLIC_VIRTUAL_ASSISTANT_PHONE || '09139249581'
+const ASSISTANT_PHONE = process.env.NEXT_PUBLIC_VIRTUAL_ASSISTANT_PHONE || '09139249580'
 const ASSISTANT_DIGITS = '234' + ASSISTANT_PHONE.replace(/\D/g, '').replace(/^0/, '')
 const SLACK_INVITE_URL = process.env.SLACK_INVITE_URL || 'https://join.slack.com/t/chat2build/shared_invite/sample-invite'
 

@@ -58,13 +58,13 @@ async function handleVerification(
       metadata: {
         student_name: studentData?.name || 'Demo Student',
         student_email: studentData?.email || 'demo@chat2build.pro',
-        student_phone: studentData?.phone || '09139249581',
+        student_phone: studentData?.phone || '09139249580',
         amount_ngn: '30000',
       },
       customer: {
         name: studentData?.name || 'Demo Student',
         email: studentData?.email || 'demo@chat2build.pro',
-        phone_number: studentData?.phone || '09139249581',
+        phone_number: studentData?.phone || '09139249580',
       },
     }
   } else {

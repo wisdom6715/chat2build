@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { WhatsAppSupport } from '../components/WhatsApp'
 
-const ASSISTANT_PHONE = '09139249581'
+const ASSISTANT_PHONE = process.env.NEXT_PUBLIC_VIRTUAL_ASSISTANT_PHONE || '09139249580'
 
 const perks = [
   'Bootcamp commencement date: November 15, 2026',
@@ -263,7 +263,7 @@ export default function RegistrationPage() {
                       required
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
-                      placeholder="e.g. 09139249581 or +234..."
+                      placeholder="e.g. 09139249580 or +234..."
                       className="w-full rounded-lg border border-line px-3.5 py-2.5 text-[13px] text-ink placeholder:text-muted/60 focus:border-[#090BC2] focus:outline-none focus:ring-2 focus:ring-[#090BC2]/20"
                     />
                     <p className="mt-1 text-[10px] text-muted">

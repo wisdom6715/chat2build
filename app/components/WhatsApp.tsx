@@ -65,7 +65,7 @@ function ArrowIcon() {
 }
 
 export function WhatsAppSupport({
-  phone = '09139249581',
+  phone = process.env.NEXT_PUBLIC_VIRTUAL_ASSISTANT_PHONE || '09139249580',
   defaultMessage = 'Hi Chat2Build team, I have a question about the bootcamp.',
   topics = DEFAULT_TOPICS,
 }: WhatsAppSupportProps) {
