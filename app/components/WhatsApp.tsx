@@ -105,26 +105,31 @@ export function WhatsAppSupport({
   if (!phone.replace(/\D/g, '')) return null
 
   return (
-    // The container only ever contains the launcher button in normal flow, so it is exactly
-    // the size of the button. The panel is absolutely positioned above it, so it takes up
-    // no space (and blocks no taps) while closed.
+    // The root is a fixed, right-aligned box that ignores pointer events itself; only the
+    // launcher (and the panel while open) receive taps. The panel sits in its own absolutely
+    // positioned wrapper that has NO `noise` class: `noise` sets position: relative, which
+    // was overriding `absolute`, pulling the closed panel back into layout (330x514 box)
+    // and covering the page content.
     <div
       ref={rootRef}
-      className="fixed right-4 z-50 bottom-[max(1rem,env(safe-area-inset-bottom))] sm:right-6 sm:bottom-[max(1.5rem,env(safe-area-inset-bottom))]"
+      className="pointer-events-none fixed right-4 z-50 flex justify-end bottom-[max(1rem,env(safe-area-inset-bottom))] sm:right-6 sm:bottom-[max(1.5rem,env(safe-area-inset-bottom))]"
     >
-      {/* Panel */}
+      {/* Panel wrapper: positioning + visibility only */}
       <div
         id={panelId}
         role="dialog"
         aria-label="Chat with Chat2Build support on WhatsApp"
+        aria-hidden={!open}
         className={[
-          'noise absolute bottom-full right-0 mb-3 w-[min(330px,calc(100vw-2rem))] origin-bottom-right overflow-hidden rounded-2xl border border-white/10 bg-[#080981] p-5 text-white shadow-[0_24px_60px_-20px_rgba(8,9,129,.75)]',
+          'absolute bottom-full right-0 mb-3 w-[min(330px,calc(100vw-2rem))] origin-bottom-right',
           'transition-[opacity,transform,visibility] duration-200 ease-out motion-reduce:transition-none',
           open
             ? 'pointer-events-auto visible translate-y-0 scale-100 opacity-100'
             : 'pointer-events-none invisible translate-y-2 scale-95 opacity-0',
         ].join(' ')}
       >
+      {/* Panel card: visual styling */}
+      <div className="noise relative overflow-hidden rounded-2xl border border-white/10 bg-[#080981] p-5 text-white shadow-[0_24px_60px_-20px_rgba(8,9,129,.75)]">
         {/* Same orbit rings as the CTA banner */}
         <div className="pointer-events-none absolute -right-10 -top-14 h-44 w-[75%] rounded-[50%] border border-white/10" />
         <div className="pointer-events-none absolute -bottom-24 -left-12 h-48 w-[80%] rounded-[50%] border border-white/10" />
@@ -190,6 +195,7 @@ export function WhatsAppSupport({
           </p>
         </div>
       </div>
+      </div>
 
       {/* Launcher */}
       <button
@@ -198,7 +204,7 @@ export function WhatsAppSupport({
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls={panelId}
-        className="noise relative flex items-center gap-2.5 overflow-hidden rounded-xl border border-white/15 bg-[#090BC2] py-2 pl-2 pr-4 text-white shadow-[0_14px_34px_-12px_rgba(8,9,129,.85)] transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lemon motion-reduce:hover:translate-y-0"
+        className="noise pointer-events-auto relative flex items-center gap-2.5 overflow-hidden rounded-xl border border-white/15 bg-[#090BC2] py-2 pl-2 pr-4 text-white shadow-[0_14px_34px_-12px_rgba(8,9,129,.85)] transition hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lemon motion-reduce:hover:translate-y-0"
       >
         <span className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-[#25D366] text-white">
           <WhatsAppIcon className="h-5 w-5" />
