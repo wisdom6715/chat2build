@@ -66,16 +66,8 @@ export async function sendWelcomeEmail({
           <span class="badge">Chat2Build • Payment Confirmed</span>
           <h1>Welcome to Chat2Build, ${cleanName}! 🚀</h1>
           <p>
-            Congratulations! Your seat for the upcoming <strong>Chat2Build 4-Week AI Bootcamp</strong> is officially locked in. Over the next 4 weeks, you will learn how to turn ideas into fully functional, production-ready web and mobile apps using cutting-edge AI agent workflows.
+            Congratulations! Your seat for the upcoming <strong>Chat2Build 4-Week AI Bootcamp</strong> is officially locked in. Over the next 2 weeks, you will learn how to turn ideas into fully functional, production-ready web application using cutting-edge AI developemnt tools.
           </p>
-
-          <div class="details">
-            <strong>Bootcamp Details:</strong><br>
-            • Program: Chat2Build 4-Week AI Bootcamp<br>
-            • Tuition: ₦30,000 NGN (Paid in Full)<br>
-            • Reference ID: ${checkoutId || 'Confirmed'}<br>
-            • Commencement Date: November 15, 2026
-          </div>
 
           <div class="action-card">
             <h2>Next Step: Message Our Virtual Assistant</h2>
@@ -102,8 +94,6 @@ export async function sendWelcomeEmail({
 
   const text = `
 Welcome to Chat2Build, ${cleanName}!
-
-Your ₦30,000 payment for the Chat2Build 4-Week AI Bootcamp is confirmed! (Ref: ${checkoutId || 'Confirmed'})
 
 NEXT STEP:
 Please message our Virtual Assistant on WhatsApp at ${ASSISTANT_PHONE} or visit:

@@ -8,14 +8,13 @@ const ASSISTANT_PHONE = process.env.NEXT_PUBLIC_VIRTUAL_ASSISTANT_PHONE || '0913
 
 const perks = [
   'Bootcamp commencement date: November 15, 2026',
-  'Guaranteed 4-week intensive bootcamp immersion',
+  'Guaranteed 2-week intensive bootcamp immersion',
   'Weekly 3 days live mentor Q&A & live architecture teardowns',
   'Build real web & cross-platform mobile apps with AI tools',
-  'Step-by-step App Store & Google Play publishing walkthrough',
+  'Step-by-step web app deployment and setting up your S.E.O',
   'Direct 1-on-1 code debugging & 24/7 technical tutor support',
   'Access to private student builder community & official Slack channel',
   'Lifetime access to recorded classes and curriculum updates',
-  'No hidden fees — transparent ₦30,000 one-time payment',
 ]
 
 export default function RegistrationPage() {
@@ -111,16 +110,12 @@ export default function RegistrationPage() {
           </button>
 
           <div className="flex items-center gap-4">
-            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-lemon/30 px-3 py-1 text-[11px] font-bold text-[#080981]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#080981]" />
-              Secure 256-bit Checkout
-            </span>
             <button
               type="button"
               onClick={() => router.push('/')}
               className="cursor-pointer text-[12px] font-semibold text-muted hover:text-[#090BC2] transition"
             >
-              ← Back to Home
+              ← Back
             </button>
           </div>
         </div>
@@ -133,15 +128,14 @@ export default function RegistrationPage() {
             <div className="flex flex-wrap items-center gap-2.5 justify-center sm:justify-start">
               <span className="yellow-label">Bootcamp Enrollment</span>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-[#090BC2]/10 border border-[#090BC2]/20 px-3 py-0.5 text-[11px] font-bold text-[#090BC2]">
-                <span>🗓️</span>
-                <span>Commencement Date: November 15, 2026</span>
+                <span>Commencement Date: November 22, 2026</span>
               </span>
             </div>
             <h1 className="display mt-3 text-[30px] sm:text-[40px] font-black leading-tight text-ink">
               Register for Chat2Build Bootcamp
             </h1>
             <p className="mt-2 text-[13px] sm:text-[15px] text-muted max-w-2xl">
-              Fill in your details below to secure your seat. You will be redirected to complete your ₦30,000 payment.
+              Fill in your details below to secure your seat
             </p>
           </div>
 
@@ -157,7 +151,7 @@ export default function RegistrationPage() {
                     <h2 className="text-[20px] font-bold text-ink mt-0.5">Comprehensive Immersion</h2>
                   </div>
                   <div className="text-right">
-                    <p className="text-[26px] font-black tracking-tight text-[#090BC2]">₦30,000</p>
+                    <p className="text-[26px] font-black tracking-tight text-[#090BC2]">100% Free</p>
                     <p className="text-[10px] text-muted">one-time payment</p>
                   </div>
                 </div>
@@ -180,21 +174,6 @@ export default function RegistrationPage() {
                     </li>
                   ))}
                 </ul>
-              </div>
-
-              {/* Bachs Trust Banner */}
-              <div className="rounded-2xl border border-line bg-lavender p-5">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#090BC2] text-white font-black text-sm">
-                    ⚡
-                  </div>
-                  <div>
-                    <h3 className="text-[13px] font-bold text-ink">Bachs Payment Infrastructure</h3>
-                    <p className="text-[11px] text-muted mt-0.5">
-                      Accepts Nigerian Cards, Bank Transfer, USSD, and Crypto. Fast, localized, and securely encrypted.
-                    </p>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -271,14 +250,6 @@ export default function RegistrationPage() {
                     </p>
                   </div>
 
-                  {/* Summary row */}
-                  <div className="pt-2">
-                    <div className="flex items-center justify-between rounded-lg bg-lavender p-3 border border-line text-[12px]">
-                      <span className="font-semibold text-muted">Total Amount Due</span>
-                      <span className="text-[16px] font-black text-[#090BC2]">₦30,000 NGN</span>
-                    </div>
-                  </div>
-
                   {/* Submit Button */}
                   <div className="pt-2">
                     {checkoutUrl ? (
@@ -307,18 +278,13 @@ export default function RegistrationPage() {
                           </>
                         ) : (
                           <>
-                            <span>Make Payment (₦30,000)</span>
-                            <span className="text-base">→</span>
+                            <span>Register Now</span>
                           </>
                         )}
                       </button>
                     )}
                   </div>
                 </form>
-
-                <div className="mt-5 border-t border-line pt-4 text-center text-[10px] text-muted">
-                  <p>🔒 256-bit encrypted checkout. You will be redirected to complete your payment.</p>
-                </div>
               </div>
             </div>
           </div>
