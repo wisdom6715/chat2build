@@ -7,14 +7,15 @@ import { WhatsAppSupport } from '../components/WhatsApp'
 const ASSISTANT_PHONE = process.env.NEXT_PUBLIC_VIRTUAL_ASSISTANT_PHONE || '09139249580'
 
 const perks = [
-  'Bootcamp commencement date: November 15, 2026',
+  'Bootcamp commencement date: November 22, 2026',
   'Guaranteed 2-week intensive bootcamp immersion',
   'Weekly 3 days live mentor Q&A & live architecture teardowns',
-  'Build real web & cross-platform mobile apps with AI tools',
+  'Build real web apps with modern AI tools & agents',
   'Step-by-step web app deployment and setting up your S.E.O',
   'Direct 1-on-1 code debugging & 24/7 technical tutor support',
-  'Access to private student builder community & official Slack channel',
+  'Access to private student builder community & official WhatsApp group',
   'Lifetime access to recorded classes and curriculum updates',
+  '100% Free enrollment — zero hidden charges',
 ]
 
 export default function RegistrationPage() {
@@ -24,7 +25,7 @@ export default function RegistrationPage() {
   const [phoneNumber, setPhoneNumber] = useState('')
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
-  const [checkoutUrl, setCheckoutUrl] = useState('')
+  const [redirectUrl, setRedirectUrl] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -64,7 +65,7 @@ export default function RegistrationPage() {
         // Non-critical: ignore quota restrictions in private browsing
       }
 
-      // 2. Call backend to create Bachs checkout session & persist in Firebase Firestore
+      // 2. Call backend to complete free registration & persist in Firebase Firestore
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -77,15 +78,15 @@ export default function RegistrationPage() {
 
       const data = await res.json().catch(() => ({}))
 
-      if (!res.ok || !data.checkout_url) {
-        throw new Error(data.error || 'Failed to initialize payment. Please try again.')
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to complete registration. Please try again.')
       }
 
-      setCheckoutUrl(data.checkout_url)
+      const targetUrl = data.redirect_url || data.checkout_url || '/welcome'
+      setRedirectUrl(targetUrl)
 
-      // 3. Immediately redirect to Bachs hosted checkout
-      // Using assign for maximum compatibility across mobile Safari, Android Chrome, and in-app webviews
-      window.location.assign(data.checkout_url)
+      // 3. Navigate directly to welcome screen
+      window.location.assign(targetUrl)
     } catch (err: any) {
       console.error('[Registration Error]:', err)
       setErrorMessage(err.message || 'Something went wrong. Please check your connection and try again.')
@@ -110,6 +111,10 @@ export default function RegistrationPage() {
           </button>
 
           <div className="flex items-center gap-4">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[11px] font-bold text-emerald-700">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              100% Free Registration
+            </span>
             <button
               type="button"
               onClick={() => router.push('/')}
@@ -135,32 +140,28 @@ export default function RegistrationPage() {
               Register for Chat2Build Bootcamp
             </h1>
             <p className="mt-2 text-[13px] sm:text-[15px] text-muted max-w-2xl">
-              Fill in your details below to secure your seat
+              Fill in your details below to secure your seat. You will immediately receive access to join the student WhatsApp community.
             </p>
           </div>
 
-          <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-start">
-            {/* Left Column: Course Overview & Summary */}
-            <div className="space-y-6">
-              <div className="soft-card p-6 sm:p-7 border border-line bg-white shadow-sm">
-                <div className="flex items-center justify-between border-b border-line pb-4">
+          <div className="grid gap-8 lg:grid-cols-12 items-start">
+            {/* Left Column: Perks */}
+            <div className="lg:col-span-5 space-y-4">
+              <div className="soft-card p-6 border border-line bg-white shadow-card">
+                <div className="flex items-baseline justify-between border-b border-line pb-4">
                   <div>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-[#090BC2]">
-                      Recommended Plan
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#080981]">
+                      Cohort Plan
                     </span>
                     <h2 className="text-[20px] font-bold text-ink mt-0.5">Comprehensive Immersion</h2>
                   </div>
                   <div className="text-right">
                     <p className="text-[26px] font-black tracking-tight text-[#090BC2]">100% Free</p>
-                    <p className="text-[10px] text-muted">one-time payment</p>
+                    <p className="text-[10px] text-muted">no payment required</p>
                   </div>
                 </div>
 
-                <p className="mt-4 text-[12px] text-muted leading-relaxed">
-                  Learn how to build, test, and launch real web and mobile apps using AI tools starting from zero. No prior coding experience required.
-                </p>
-
-                <h3 className="mt-5 text-[11px] font-bold uppercase tracking-wider text-ink">
+                <h3 className="mt-4 text-[12px] font-bold uppercase tracking-wider text-muted">
                   Everything Included in Your Seat:
                 </h3>
 
@@ -178,113 +179,115 @@ export default function RegistrationPage() {
             </div>
 
             {/* Right Column: Registration Form */}
-            <div className="soft-card overflow-hidden border border-line bg-white shadow-card">
-              <div className="h-2 bg-gradient-to-r from-[#090BC2] via-[#2D25EB] to-lemon" />
+            <div className="lg:col-span-7">
+              <div className="soft-card overflow-hidden border border-line bg-white shadow-card">
+                <div className="h-2 bg-gradient-to-r from-[#090BC2] via-[#2D25EB] to-lemon" />
 
-              <div className="p-6 sm:p-8">
-                <div className="flex items-center justify-between border-b border-line pb-4">
-                  <div>
-                    <h2 className="text-[18px] font-bold text-ink">Student Information</h2>
-                    <p className="text-[11px] text-muted mt-0.5">Please provide accurate contact details.</p>
+                <div className="p-6 sm:p-8">
+                  <div className="flex items-center justify-between border-b border-line pb-4">
+                    <div>
+                      <h2 className="text-[18px] font-bold text-ink">Student Information</h2>
+                      <p className="text-[11px] text-muted mt-0.5">Please provide your contact details.</p>
+                    </div>
+                    <span className="rounded-md bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-200">
+                      Free Registration
+                    </span>
                   </div>
-                  <span className="rounded-md bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-200">
-                    Step 1 of 2
-                  </span>
+
+                  {errorMessage && (
+                    <div className="mt-4 rounded-xl bg-red-50 border border-red-200 p-3 text-[12px] text-red-600">
+                      {errorMessage}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-ink mb-1">
+                        Full Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="fullname"
+                        required
+                        value={fullname}
+                        onChange={(e) => setFullname(e.target.value)}
+                        placeholder="e.g. Jane Doe"
+                        className="w-full rounded-lg border border-line px-3.5 py-2.5 text-[13px] text-ink placeholder:text-muted/60 focus:border-[#090BC2] focus:outline-none focus:ring-2 focus:ring-[#090BC2]/20"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-ink mb-1">
+                        Email Address <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="e.g. jane@example.com"
+                        className="w-full rounded-lg border border-line px-3.5 py-2.5 text-[13px] text-ink placeholder:text-muted/60 focus:border-[#090BC2] focus:outline-none focus:ring-2 focus:ring-[#090BC2]/20"
+                      />
+                      <p className="mt-1 text-[10px] text-muted">
+                        Your registration confirmation and WhatsApp community invite will be sent to this email.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-ink mb-1">
+                        Phone Number / WhatsApp <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        name="phone_number"
+                        required
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        placeholder="e.g. 09139249580 or +234..."
+                        className="w-full rounded-lg border border-line px-3.5 py-2.5 text-[13px] text-ink placeholder:text-muted/60 focus:border-[#090BC2] focus:outline-none focus:ring-2 focus:ring-[#090BC2]/20"
+                      />
+                      <p className="mt-1 text-[10px] text-muted">
+                        Used to connect you with mentors and the student WhatsApp community.
+                      </p>
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="pt-2">
+                      {redirectUrl ? (
+                        <a
+                          href={redirectUrl}
+                          className="w-full flex items-center justify-center gap-2 rounded-xl bg-lemon py-3.5 px-6 text-[13px] font-black text-[#080981] hover:brightness-105 transition shadow-md animate-pulse text-center"
+                        >
+                          <span>Registered! Tap here if not redirected automatically</span>
+                          <span className="text-base">→</span>
+                        </a>
+                      ) : (
+                        <button
+                          type="submit"
+                          aria-disabled={loading}
+                          className={`w-full flex items-center justify-center gap-2 rounded-xl bg-[#090BC2] py-3.5 px-6 text-[13px] font-black text-white hover:bg-[#080981] transition shadow-md hover:shadow-lg ${
+                            loading ? 'opacity-80 pointer-events-none' : 'cursor-pointer'
+                          }`}
+                        >
+                          {loading ? (
+                            <>
+                              <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                              </svg>
+                              <span>Registering your seat...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Complete Free Registration →</span>
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </form>
                 </div>
-
-                {errorMessage && (
-                  <div className="mt-4 rounded-xl bg-red-50 border border-red-200 p-3 text-[12px] text-red-600">
-                    {errorMessage}
-                  </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-ink mb-1">
-                      Full Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="fullname"
-                      required
-                      value={fullname}
-                      onChange={(e) => setFullname(e.target.value)}
-                      placeholder="e.g. Jane Doe"
-                      className="w-full rounded-lg border border-line px-3.5 py-2.5 text-[13px] text-ink placeholder:text-muted/60 focus:border-[#090BC2] focus:outline-none focus:ring-2 focus:ring-[#090BC2]/20"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-ink mb-1">
-                      Email Address <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="e.g. jane@example.com"
-                      className="w-full rounded-lg border border-line px-3.5 py-2.5 text-[13px] text-ink placeholder:text-muted/60 focus:border-[#090BC2] focus:outline-none focus:ring-2 focus:ring-[#090BC2]/20"
-                    />
-                    <p className="mt-1 text-[10px] text-muted">
-                      Your payment receipt and onboarding kit will be sent to this email.
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-ink mb-1">
-                      Phone Number / WhatsApp <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone_number"
-                      required
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      placeholder="e.g. 09139249580 or +234..."
-                      className="w-full rounded-lg border border-line px-3.5 py-2.5 text-[13px] text-ink placeholder:text-muted/60 focus:border-[#090BC2] focus:outline-none focus:ring-2 focus:ring-[#090BC2]/20"
-                    />
-                    <p className="mt-1 text-[10px] text-muted">
-                      Used to message our virtual assistant ({ASSISTANT_PHONE}) to be added to the official Slack channel.
-                    </p>
-                  </div>
-
-                  {/* Submit Button */}
-                  <div className="pt-2">
-                    {checkoutUrl ? (
-                      <a
-                        href={checkoutUrl}
-                        className="w-full flex items-center justify-center gap-2 rounded-xl bg-lemon py-3.5 px-6 text-[13px] font-black text-[#080981] hover:brightness-105 transition shadow-md animate-pulse text-center"
-                      >
-                        <span>Redirecting... Tap here if not redirected automatically</span>
-                        <span className="text-base">→</span>
-                      </a>
-                    ) : (
-                      <button
-                        type="submit"
-                        aria-disabled={loading}
-                        className={`w-full flex items-center justify-center gap-2 rounded-xl bg-[#090BC2] py-3.5 px-6 text-[13px] font-black text-white hover:bg-[#080981] transition shadow-md hover:shadow-lg ${
-                          loading ? 'opacity-80 pointer-events-none' : 'cursor-pointer'
-                        }`}
-                      >
-                        {loading ? (
-                          <>
-                            <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                            </svg>
-                            <span>Processing payment...</span>
-                          </>
-                        ) : (
-                          <>
-                            <span>Register Now</span>
-                          </>
-                        )}
-                      </button>
-                    )}
-                  </div>
-                </form>
               </div>
             </div>
           </div>

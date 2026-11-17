@@ -180,12 +180,12 @@ export default function AdminDashboardPage() {
               : r
           )
         )
-        showAlert('success', `Slack invite sent via Resend to ${student.email}!`)
+        showAlert('success', `WhatsApp community invite sent via Resend to ${student.email}!`)
       } else {
-        showAlert('error', data.error || 'Failed to send Slack invite.')
+        showAlert('error', data.error || 'Failed to send WhatsApp community invite.')
       }
     } catch (err: any) {
-      showAlert('error', err.message || 'Error sending Slack invite.')
+      showAlert('error', err.message || 'Error sending WhatsApp community invite.')
     } finally {
       setActionLoading((prev) => ({ ...prev, [student.id]: null }))
     }
@@ -225,7 +225,7 @@ export default function AdminDashboardPage() {
     } else if (digits.length === 10) {
       intl = '234' + digits
     }
-    const text = `Hello ${student.fullname}! This is the Chat2Build Admissions Team regarding your registration (Ref: ${student.checkout_id}). We are following up to verify your seat and get you setup on Slack.`
+    const text = `Hello ${student.fullname}! This is the Chat2Build Admissions Team regarding your registration. We are following up to welcome you and ensure you have joined the official student WhatsApp community!`
     return `https://wa.me/${intl}?text=${encodeURIComponent(text)}`
   }
 
@@ -492,10 +492,10 @@ export default function AdminDashboardPage() {
             <div className="mt-2 flex items-baseline justify-between">
               <span className="text-[24px] sm:text-[28px] font-black text-[#090BC2]">{stats.total}</span>
               <span className="text-[10px] sm:text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                ₦{(stats.totalRevenue).toLocaleString()}
+                Free Enrollment
               </span>
             </div>
-            <p className="mt-1 text-[10px] text-muted">Verified via Bachs Gateway</p>
+            <p className="mt-1 text-[10px] text-muted">Online Registrations</p>
           </div>
 
           <div className="soft-card p-4 sm:p-5 border border-line bg-white shadow-xs">
@@ -513,7 +513,7 @@ export default function AdminDashboardPage() {
 
           <div className="soft-card p-4 sm:p-5 border border-line bg-white shadow-xs">
             <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted">
-              Slack Invites Sent
+              WhatsApp Invites Sent
             </p>
             <div className="mt-2 flex items-baseline justify-between">
               <span className="text-[24px] sm:text-[28px] font-black text-[#2D25EB]">{stats.slackSent}</span>
@@ -652,7 +652,7 @@ export default function AdminDashboardPage() {
                       <th className="py-3.5 px-4">Student Details</th>
                       <th className="py-3.5 px-4">Payment &amp; Ref</th>
                       <th className="py-3.5 px-4 text-center">Mark Included</th>
-                      <th className="py-3.5 px-4 text-right">Slack Invitation</th>
+                      <th className="py-3.5 px-4 text-right">WhatsApp Community</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-line">
@@ -788,8 +788,8 @@ export default function AdminDashboardPage() {
                               }`}
                               title={
                                 student.slackInviteSent
-                                  ? `Slack invite already sent on ${safeFormatDateShort(student.slackInviteSentAt)}. Click to resend.`
-                                  : 'Send official Slack workspace invite to student email via Resend'
+                                  ? `WhatsApp community invite already sent on ${safeFormatDateShort(student.slackInviteSentAt)}. Click to resend.`
+                                  : 'Send official WhatsApp community invite to student email via Resend'
                               }
 
                             >
@@ -804,15 +804,15 @@ export default function AdminDashboardPage() {
                               ) : student.slackInviteSent ? (
                                 <>
                                   <span className="text-emerald-600 font-bold">✓</span>
-                                  <span>Slack Sent</span>
+                                  <span>WhatsApp Sent</span>
                                   <span className="text-[10px] opacity-60 font-medium group-hover:inline hidden">
                                     (Resend)
                                   </span>
                                 </>
                               ) : (
                                 <>
-                                  <span className="text-sm">🚀</span>
-                                  <span>Send Slack</span>
+                                  <span className="text-sm">💬</span>
+                                  <span>Send WhatsApp Link</span>
                                 </>
                               )}
                             </button>
@@ -928,7 +928,7 @@ export default function AdminDashboardPage() {
                           </div>
                         </div>
 
-                        {/* Enhanced Send Slack Button */}
+                        {/* Enhanced Send WhatsApp Community Button */}
                         <button
                           type="button"
                           onClick={() => handleSendSlackInvite(student)}
@@ -943,11 +943,11 @@ export default function AdminDashboardPage() {
                             <span>Sending...</span>
                           ) : student.slackInviteSent ? (
                             <>
-                              <span>✓ Slack Sent</span>
+                              <span>✓ WhatsApp Sent</span>
                             </>
                           ) : (
                             <>
-                              <span>🚀 Send Slack</span>
+                              <span>💬 Send WhatsApp Link</span>
                             </>
                           )}
                         </button>

@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { loadBachs } from '@bachs/js'
 
 type RegistrationContextType = {
   isOpen: boolean
@@ -46,7 +45,7 @@ export function RegistrationModal({
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
-  // Prefetch the welcome page while the modal is open so the redirect after payment is instant
+  // Prefetch welcome page
   useEffect(() => {
     if (isOpen) router.prefetch('/welcome')
   }, [isOpen, router])
@@ -85,7 +84,6 @@ export function RegistrationModal({
     setLoading(true)
 
     try {
-      // Store student details in session storage for personalized welcome page
       try {
         if (typeof window !== 'undefined' && window.sessionStorage) {
           sessionStorage.setItem('c2b_name', name.trim())
@@ -93,75 +91,34 @@ export function RegistrationModal({
           sessionStorage.setItem('c2b_phone', phone.trim())
         }
       } catch (storageErr) {
-        // Non-critical: ignore storage restrictions (e.g. iOS private browsing)
+        // Non-critical
       }
 
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: name.trim(),
+          fullname: name.trim(),
           email: email.trim(),
-          phone: phone.trim(),
+          phone_number: phone.trim(),
         }),
       })
 
       const data = await res.json()
 
-      if (!res.ok || !data.checkout_url) {
-        throw new Error(data.error || 'Failed to initiate checkout session with Bachs.')
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to complete registration.')
       }
 
-      const checkoutUrl = data.checkout_url
-      const checkoutId = data.checkout_id || ''
+      const targetUrl =
+        data.redirect_url ||
+        data.checkout_url ||
+        `/welcome?name=${encodeURIComponent(name.trim())}&email=${encodeURIComponent(
+          email.trim()
+        )}&phone=${encodeURIComponent(phone.trim())}`
 
-      // If demo mode or redirect flag, proceed directly to URL (external, so a full navigation)
-      if (data.demo) {
-        window.location.assign(checkoutUrl)
-        return
-      }
-
-      // Internal navigation to the welcome page via the Next router (guarded so it only fires once)
-      let redirected = false
-      const goToWelcome = () => {
-        if (redirected) return
-        redirected = true
-        onClose()
-        router.push(
-          `/welcome?checkout_id=${encodeURIComponent(checkoutId)}&name=${encodeURIComponent(
-            name.trim()
-          )}&email=${encodeURIComponent(email.trim())}&phone=${encodeURIComponent(phone.trim())}`
-        )
-      }
-
-      // Attempt to load Bachs overlay checkout
-      try {
-        const bachs = await loadBachs()
-
-        bachs.Initialize({
-          onEvent: (event) => {
-            if (event.type === 'checkout.completed') {
-              goToWelcome()
-            }
-          },
-        })
-
-        await bachs.Checkout.open({
-          checkoutUrl,
-          onEvent: (event) => {
-            if (event.type === 'checkout.completed') {
-              goToWelcome()
-            }
-          },
-        })
-
-        setLoading(false)
-        onClose()
-      } catch (overlayErr) {
-        console.warn('[Bachs Overlay Error, falling back to redirect]:', overlayErr)
-        // Fallback: direct browser redirect to hosted checkout (external)
-        window.location.assign(checkoutUrl)
-      }
+      onClose()
+      window.location.assign(targetUrl)
     } catch (err: any) {
       console.error(err)
       setErrorMessage(err.message || 'Something went wrong. Please try again.')
@@ -204,7 +161,7 @@ export function RegistrationModal({
           </div>
 
           <p className="mt-1 text-[12px] text-muted leading-relaxed">
-            4-week hands-on immersion to build &amp; launch real apps with AI.
+            2-week hands-on immersion to build &amp; launch real web applications with AI.
           </p>
 
           {/* Pricing summary card */}
@@ -215,9 +172,9 @@ export function RegistrationModal({
               </p>
               <div className="flex items-baseline gap-1 mt-0.5">
                 <span className="text-[24px] font-black tracking-tight text-[#090BC2]">
-                  ₦30,000
+                  100% Free
                 </span>
-                <span className="text-[11px] text-muted">one-time</span>
+                <span className="text-[11px] text-muted">no payment required</span>
               </div>
             </div>
           </div>
@@ -299,23 +256,23 @@ export function RegistrationModal({
                         d="M4 12a8 8 0 018-8v8H4z"
                       />
                     </svg>
-                    <span>Processing payment...</span>
+                    <span>Registering your seat...</span>
                   </>
                 ) : (
                   <>
-                    <span>Make Payment (₦30,000)</span>
+                    <span>Complete Free Registration →</span>
                   </>
                 )}
               </button>
             </div>
           </form>
 
-          {/* Footer security badges */}
+          {/* Footer */}
           <div className="mt-5 border-t border-line pt-4 flex items-center justify-between text-[10px] text-muted">
             <span className="flex items-center gap-1.5">
-              <span>🔒</span> Encrypted by Bachs Infrastructure
+              <span>🎉</span> Free Cohort Immersion
             </span>
-            <span>Immediate Receipt &amp; Verification</span>
+            <span>Instant Confirmation &amp; WhatsApp Group</span>
           </div>
         </div>
       </div>

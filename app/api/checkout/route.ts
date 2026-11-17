@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { db } from '../../lib/firebase'
+import { collection, addDoc, getDocs, query, where, updateDoc, serverTimestamp } from 'firebase/firestore'
+import { sendWelcomeEmail } from '../../lib/email'
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,109 +22,71 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Please provide your phone / WhatsApp number.' }, { status: 400 })
     }
 
-    // Determine site origin for redirects:
-    // IMPORTANT: Bachs API strictly requires a publicly accessible URL and rejects localhost or private IPs.
-    let publicOrigin = process.env.NEXT_PUBLIC_SITE_URL?.trim()
-    if (
-      !publicOrigin ||
-      publicOrigin.includes('localhost') ||
-      publicOrigin.includes('127.0.0.1') ||
-      publicOrigin.includes('192.168.') ||
-      publicOrigin.includes('10.') ||
-      publicOrigin.includes('172.') ||
-      !publicOrigin.startsWith('http')
-    ) {
-      publicOrigin = 'https://chat2build.pro'
-    }
+    // 1. Check if student already registered with this email
+    let docId = ''
+    try {
+      const regRef = collection(db, 'registrations')
+      const q = query(regRef, where('email', '==', email))
+      const existingSnap = await getDocs(q)
 
-    const apiKey = process.env.BACHS_API_KEY?.trim()
+      if (!existingSnap.empty) {
+        docId = existingSnap.docs[0].id
+        console.log(`[Registration] Email already registered: ${email} (docId: ${docId})`)
+      } else {
+        // 2. Persist new free registration in Firestore
+        const newDocRef = await addDoc(regRef, {
+          fullname: name,
+          email: email,
+          phone_number: phone,
+          amount: 0,
+          currency: 'NGN',
+          status: 'free_registered',
+          payment_confirmed: true,
+          isIncluded: false,
+          slackInviteSent: false,
+          welcomeEmailSent: false,
+          createdAt: serverTimestamp(),
+        })
+        docId = newDocRef.id
+        console.log(`[Registration] Successfully registered ${email} in Firestore (docId: ${docId})`)
 
-    // If no Bachs API key is set yet, handle gracefully with a development demo session
-    if (!apiKey) {
-      console.warn(
-        '[Bachs Checkout] Warning: BACHS_API_KEY is not defined in environment variables. Providing demo redirect for preview. Add your Bachs secret key (sk_live_... or sk_sandbox_...) to .env.local to activate live payments.'
-      )
-      const demoUrl = `${publicOrigin}/welcome?demo=true&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone || '')}`
-      return NextResponse.json({
-        checkout_url: demoUrl,
-        checkout_id: 'chk_demo_' + Date.now(),
-        demo: true,
-      })
-    }
-
-    // Determine Bachs API base URL based on key prefix or override
-    const isLive = apiKey.startsWith('sk_live_')
-    const defaultBaseUrl = isLive ? 'https://api.bachs.io' : 'https://sandbox-api.bachs.io'
-    const baseUrl = process.env.BACHS_BASE_URL?.trim() || defaultBaseUrl
-
-    const payload: Record<string, any> = {
-      pricing: {
-        currency: 'NGN',
-        amount: '30000.00',
-      },
-      customer: {
-        name: name.trim(),
-        email: email.trim().toLowerCase(),
-      },
-      success_url: `${publicOrigin}/welcome?checkout_id={checkout_id}`,
-      cancel_url: `${publicOrigin}/registration`,
-      metadata: {
-        product: 'Chat2Build 4-Week AI Bootcamp',
-        amount_ngn: '30000',
-        student_name: name.trim(),
-        student_email: email.trim(),
-        student_phone: phone?.trim() || '',
-      },
-    }
-
-    if (phone && typeof phone === 'string' && phone.trim().length > 3) {
-      const digits = phone.replace(/\D/g, '')
-      let formattedPhone = '+' + digits
-      if (digits.startsWith('0') && digits.length === 11) {
-        formattedPhone = '+234' + digits.slice(1)
-      } else if (digits.length === 10) {
-        formattedPhone = '+234' + digits
-      } else if (digits.startsWith('234')) {
-        formattedPhone = '+' + digits
+        // 3. Immediately send the official Welcome Email with WhatsApp Community Link via Resend
+        try {
+          const emailRes = await sendWelcomeEmail({
+            to: email,
+            name: name,
+          })
+          if (emailRes.success) {
+            await updateDoc(newDocRef, {
+              welcomeEmailSent: true,
+              welcomeEmailSentAt: serverTimestamp(),
+            })
+          }
+        } catch (emailErr) {
+          console.error('[Registration] Welcome email sending error:', emailErr)
+        }
       }
-      payload.customer.phone_number = formattedPhone
+    } catch (dbErr: any) {
+      console.error('[Registration] Firestore write error:', dbErr)
+      // Even if firestore errors, allow student to proceed to welcome page
     }
 
-    const bachsRes = await fetch(`${baseUrl}/v1/checkout-sessions`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    })
-
-    const data = await bachsRes.json().catch(() => ({}))
-
-    if (!bachsRes.ok) {
-      console.error('[Bachs Checkout Error]:', data)
-      const message =
-        data.detail ||
-        data.message ||
-        data.error ||
-        (data.errors && Array.isArray(data.errors) ? data.errors.map((e: any) => e.message).join(', ') : '') ||
-        `Bachs API error (status ${bachsRes.status})`
-      return NextResponse.json({ error: message }, { status: bachsRes.status || 400 })
-    }
-
-    // IMPORTANT: Per strict requirement, registrations are ONLY written into the DB
-    // on the Next.js server side AFTER Bachs payment has been confirmed as successful
-    // via /api/checkout/verify or the Bachs webhook!
-
+    // 4. Return success with redirect URL for client
+    const welcomeUrl = `/welcome?name=${encodeURIComponent(name)}&email=${encodeURIComponent(
+      email
+    )}&phone=${encodeURIComponent(phone)}`
 
     return NextResponse.json({
-      checkout_url: data.checkout_url,
-      checkout_id: data.checkout_id,
+      success: true,
+      free: true,
+      id: docId,
+      checkout_url: welcomeUrl,
+      redirect_url: welcomeUrl,
     })
-  } catch (error: any) {
-    console.error('[Checkout Route Error]:', error)
+  } catch (err: any) {
+    console.error('[Registration API Error]:', err)
     return NextResponse.json(
-      { error: error?.message || 'An unexpected error occurred while initiating payment.' },
+      { error: err.message || 'Failed to complete registration. Please try again.' },
       { status: 500 }
     )
   }

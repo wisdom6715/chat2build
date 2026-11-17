@@ -201,14 +201,14 @@ export function AudienceSection() {
 }
 
 const benefits = [
-  'Bootcamp commences: November 15, 2026',
-  'Guaranteed 4-week bootcamp immersion',
+  'Bootcamp commences: November 22, 2026',
+  'Guaranteed 2-week intensive bootcamp immersion',
   'Weekly 3 days live mentor Q&A & architecture teardowns',
-  'Step-by-step App Store & Google Play walkthrough',
+  'Step-by-step web app deployment & SEO walkthrough',
   'Direct 1-on-1 code debugging support',
   'Lifetime curriculum updates & Recorded Class Walkthrough',
-  'Access to official Slack channel community of builders & mentors',
-  'No hidden fees or extra charges',
+  'Access to official WhatsApp community of builders & mentors',
+  '100% Free enrollment — zero hidden charges',
   'Active 24/7 Support tutor to guide you through the program'
 ]
 
@@ -222,22 +222,22 @@ export function PricingSection() {
         <div className="mx-auto max-w-2xl text-center">
           <SectionLabel>register now</SectionLabel>
           <h2 className="display mt-5 text-[31px] leading-none text-ink sm:text-[39px]">Get Started with our Recommended Plan</h2>
-          <p className="muted-copy mt-4">Less than 5% of what developers charge to build your App</p>
+          <p className="muted-copy mt-4">Master modern AI development workflows and build real applications</p>
         </div>
         <article className="relative mx-auto mt-10 max-w-[360px] rounded-2xl border-2 border-[#080981] bg-white p-5 shadow-[0_18px_40px_rgba(23,18,198,.12)] sm:p-6">
           <span className="absolute -right-1 -top-3 rounded-full bg-lemon px-3 py-1 text-[6px] font-black uppercase tracking-wider text-ink">
-            Build your first web app and mobile app with AI
+            Build your first web app with AI
           </span>
           <p className="text-[9px] font-black uppercase tracking-wider text-[#080981]">comprehensive track</p>
           <h3 className="mt-3 text-[22px] font-bold tracking-[-0.04em]">Registration</h3>
           <div className="mt-3 flex items-end gap-2">
-            <span className="text-[28px] font-black tracking-[-0.06em]">₦30,000</span>
-            <span className="mb-1 text-[10px] text-muted">one-time payment</span>
+            <span className="text-[28px] font-black tracking-[-0.06em]">100% Free</span>
+            <span className="mb-1 text-[10px] text-muted">free enrollment</span>
           </div>
           <div className="mt-1 flex items-center gap-1.5">
-            <span className="text-[10px] text-muted">Card, Transfer, Crypto</span>
+            <span className="text-[10px] text-muted">No Credit Card Required</span>
           </div>
-          <p className="mt-2 text-[10px] text-muted">All-inclusive package with zero hidden charges.</p>
+          <p className="mt-2 text-[10px] text-muted">Complete 2-week cohort immersion with full mentor guidance.</p>
           <ul className="mt-6 space-y-3">
             {benefits.map((benefit) => (
               <li key={benefit} className="flex gap-2 text-[10px] leading-4 text-ink">
@@ -251,7 +251,7 @@ export function PricingSection() {
             onClick={() => router.push('/registration')}
             className="primary-button mt-6 w-full cursor-pointer font-black text-center"
           >
-            Register Pay ₦30,000
+            Register for Free →
           </button>
         </article>
       </div>
