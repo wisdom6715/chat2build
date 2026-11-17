@@ -8,7 +8,7 @@ export function getWhatsAppCommunityUrl(): string {
   return (
     process.env.WHATSAPP_COMMUNITY_URL?.trim() ||
     process.env.NEXT_PUBLIC_WHATSAPP_COMMUNITY_URL?.trim() ||
-    'https://chat.whatsapp.com/chat2build-community'
+    'https://chat.whatsapp.com/JX9whdzwMAdG1NhD5M5XvS?s=cl&p=a&mlu=4&ilr=4'
   )
 }
 

@@ -8,7 +8,7 @@ const ASSISTANT_PHONE = process.env.NEXT_PUBLIC_VIRTUAL_ASSISTANT_PHONE || '0913
 const ASSISTANT_DIGITS = '234' + ASSISTANT_PHONE.replace(/\D/g, '').replace(/^0/, '')
 const WHATSAPP_COMMUNITY_URL =
   process.env.NEXT_PUBLIC_WHATSAPP_COMMUNITY_URL ||
-  'https://chat.whatsapp.com/chat2build-community'
+  'https://chat.whatsapp.com/JX9whdzwMAdG1NhD5M5XvS?s=cl&p=a&mlu=4&ilr=4'
 
 function WelcomeContent() {
   const searchParams = useSearchParams()
