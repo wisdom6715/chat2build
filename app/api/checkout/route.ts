@@ -22,6 +22,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Please provide your phone / WhatsApp number.' }, { status: 400 })
     }
 
+    // Parse and normalize acquisition source (meta, google, direct, etc.)
+    const rawSource = (body.source || body.sources || '').trim().toLowerCase()
+    let source = 'direct'
+    if (
+      rawSource.includes('meta') ||
+      rawSource.includes('fb') ||
+      rawSource.includes('facebook') ||
+      rawSource.includes('instagram') ||
+      rawSource.includes('ig')
+    ) {
+      source = 'meta'
+    } else if (
+      rawSource.includes('google') ||
+      rawSource.includes('youtube') ||
+      rawSource.includes('yt') ||
+      rawSource.includes('adwords')
+    ) {
+      source = 'google'
+    } else if (rawSource && rawSource !== 'direct' && rawSource !== 'null' && rawSource !== 'undefined') {
+      source = rawSource
+    }
+
     // 1. Check if student already registered with this email
     let docId = ''
     try {
@@ -32,12 +54,20 @@ export async function POST(req: NextRequest) {
       if (!existingSnap.empty) {
         docId = existingSnap.docs[0].id
         console.log(`[Registration] Email already registered: ${email} (docId: ${docId})`)
+        // Update source if missing
+        try {
+          const existingData = existingSnap.docs[0].data()
+          if (!existingData.source && source !== 'direct') {
+            await updateDoc(existingSnap.docs[0].ref, { source })
+          }
+        } catch {}
       } else {
         // 2. Persist new free registration in Firestore
         const newDocRef = await addDoc(regRef, {
           fullname: name,
           email: email,
           phone_number: phone,
+          source: source,
           amount: 0,
           currency: 'NGN',
           status: 'free_registered',

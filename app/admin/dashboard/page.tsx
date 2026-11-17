@@ -15,6 +15,7 @@ interface StudentRegistration {
   currency: string
   status: string
   checkout_id: string
+  source?: string
   isIncluded: boolean
   includedAt?: string | null
   includedBy?: string | null
@@ -65,6 +66,45 @@ function safeFormatDateShort(val: any): string {
   }
 }
 
+function getSourceBadge(sourceRaw?: string) {
+  const s = (sourceRaw || 'direct').toLowerCase().trim()
+  if (
+    s === 'meta' ||
+    s.includes('meta') ||
+    s.includes('fb') ||
+    s.includes('facebook') ||
+    s.includes('instagram') ||
+    s.includes('ig')
+  ) {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-blue-50 text-[#1877F2] border border-blue-200">
+        <span className="h-1.5 w-1.5 rounded-full bg-[#1877F2] animate-pulse" />
+        <span>📱 Meta Ads</span>
+      </span>
+    )
+  }
+  if (
+    s === 'google' ||
+    s.includes('google') ||
+    s.includes('youtube') ||
+    s.includes('yt') ||
+    s.includes('adwords')
+  ) {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-red-50 text-red-600 border border-red-200">
+        <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
+        <span>🔍 Google Ads</span>
+      </span>
+    )
+  }
+  return (
+    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+      <span>🌐</span>
+      <span>Direct / Organic</span>
+    </span>
+  )
+}
+
 export default function AdminDashboardPage() {
 
   const router = useRouter()
@@ -74,6 +114,7 @@ export default function AdminDashboardPage() {
   const [registrations, setRegistrations] = useState<StudentRegistration[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [filterIncluded, setFilterIncluded] = useState<'all' | 'included' | 'pending'>('all')
+  const [filterSource, setFilterSource] = useState<'all' | 'meta' | 'google' | 'direct'>('all')
 
   // Notification / Feedback banner
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
@@ -297,23 +338,97 @@ export default function AdminDashboardPage() {
         reg.fullname.toLowerCase().includes(q) ||
         reg.email.toLowerCase().includes(q) ||
         reg.phone_number.toLowerCase().includes(q) ||
+        (reg.source && reg.source.toLowerCase().includes(q)) ||
         reg.checkout_id.toLowerCase().includes(q)
 
       if (!matchesSearch) return false
 
       if (filterIncluded === 'included') return reg.isIncluded
       if (filterIncluded === 'pending') return !reg.isIncluded
+
+      if (filterSource !== 'all') {
+        const s = (reg.source || 'direct').toLowerCase()
+        if (
+          filterSource === 'meta' &&
+          !s.includes('meta') &&
+          !s.includes('fb') &&
+          !s.includes('facebook') &&
+          !s.includes('instagram') &&
+          !s.includes('ig')
+        ) {
+          return false
+        }
+        if (
+          filterSource === 'google' &&
+          !s.includes('google') &&
+          !s.includes('youtube') &&
+          !s.includes('yt') &&
+          !s.includes('adwords')
+        ) {
+          return false
+        }
+        if (
+          filterSource === 'direct' &&
+          (s.includes('meta') ||
+            s.includes('google') ||
+            s.includes('youtube') ||
+            s.includes('facebook') ||
+            s.includes('instagram') ||
+            s.includes('fb') ||
+            s.includes('yt'))
+        ) {
+          return false
+        }
+      }
+
       return true
     })
-  }, [registrations, searchQuery, filterIncluded])
+  }, [registrations, searchQuery, filterIncluded, filterSource])
 
   // Summary statistics
   const stats = useMemo(() => {
     const total = registrations.length
     const included = registrations.filter((r) => r.isIncluded).length
     const slackSent = registrations.filter((r) => r.slackInviteSent).length
-    const totalRevenue = registrations.reduce((sum, r) => sum + (r.amount || 30000), 0)
+    const totalRevenue = registrations.reduce((sum, r) => sum + (r.amount || 0), 0)
     return { total, included, slackSent, totalRevenue }
+  }, [registrations])
+
+  // Campaign source analytics (Meta vs Google vs Direct)
+  const sourceStats = useMemo(() => {
+    let meta = 0
+    let google = 0
+    let direct = 0
+
+    registrations.forEach((r) => {
+      const s = (r.source || 'direct').toLowerCase()
+      if (
+        s.includes('meta') ||
+        s.includes('fb') ||
+        s.includes('facebook') ||
+        s.includes('instagram') ||
+        s.includes('ig')
+      ) {
+        meta++
+      } else if (
+        s.includes('google') ||
+        s.includes('youtube') ||
+        s.includes('yt') ||
+        s.includes('adwords')
+      ) {
+        google++
+      } else {
+        direct++
+      }
+    })
+
+    const total = registrations.length
+    const maxVal = Math.max(meta, google, direct, 1)
+    const metaPct = total > 0 ? Math.round((meta / total) * 100) : 0
+    const googlePct = total > 0 ? Math.round((google / total) * 100) : 0
+    const directPct = total > 0 ? Math.max(0, 100 - metaPct - googlePct) : 0
+
+    return { meta, google, direct, total, maxVal, metaPct, googlePct, directPct }
   }, [registrations])
 
   if (loading) {
@@ -540,6 +655,238 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
+        {/* Campaign Acquisition Analytics & Comparison Chart */}
+        <div className="soft-card p-5 sm:p-6 border border-line bg-white shadow-xs mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-line">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-blue-50 border border-blue-200 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-[#1877F2]">
+                  Traffic Attribution
+                </span>
+                <span className="text-[11px] font-bold text-muted">
+                  Total Tracked: {sourceStats.total}
+                </span>
+              </div>
+              <h2 className="text-[17px] sm:text-[19px] font-black text-ink mt-1 tracking-tight">
+                Campaign Acquisition: Meta vs Google
+              </h2>
+              <p className="text-[11px] text-muted">
+                Real-time breakdown of registered students based on marketing source query parameters (?sources=meta, ?sources=google)
+              </p>
+            </div>
+
+            {filterSource !== 'all' && (
+              <button
+                type="button"
+                onClick={() => setFilterSource('all')}
+                className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 transition cursor-pointer"
+              >
+                <span>Reset Source Filter ({filterSource.toUpperCase()})</span>
+                <span>✕</span>
+              </button>
+            )}
+          </div>
+
+          {/* Proportional Distribution Bar */}
+          <div className="mt-5">
+            <div className="flex items-center justify-between text-[11px] font-bold mb-2">
+              <span className="text-muted">Channel Split</span>
+              <div className="flex items-center gap-3">
+                <span className="inline-flex items-center gap-1 text-[#1877F2]">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#1877F2]" />
+                  Meta ({sourceStats.metaPct}%)
+                </span>
+                <span className="inline-flex items-center gap-1 text-[#EA4335]">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#EA4335]" />
+                  Google ({sourceStats.googlePct}%)
+                </span>
+                <span className="inline-flex items-center gap-1 text-slate-500">
+                  <span className="h-2.5 w-2.5 rounded-full bg-slate-400" />
+                  Direct ({sourceStats.directPct}%)
+                </span>
+              </div>
+            </div>
+
+            {/* Stacked Ratio Bar */}
+            <div className="h-3.5 w-full rounded-full bg-slate-100 overflow-hidden flex shadow-inner">
+              <div
+                style={{ width: `${sourceStats.metaPct}%` }}
+                className="h-full bg-[#1877F2] transition-all duration-500"
+                title={`Meta: ${sourceStats.meta} (${sourceStats.metaPct}%)`}
+              />
+              <div
+                style={{ width: `${sourceStats.googlePct}%` }}
+                className="h-full bg-[#EA4335] transition-all duration-500"
+                title={`Google: ${sourceStats.google} (${sourceStats.googlePct}%)`}
+              />
+              <div
+                style={{ width: `${sourceStats.directPct}%` }}
+                className="h-full bg-slate-400 transition-all duration-500"
+                title={`Direct/Other: ${sourceStats.direct} (${sourceStats.directPct}%)`}
+              />
+            </div>
+          </div>
+
+          {/* Interactive Comparison Bar Cards */}
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            {/* Meta Card */}
+            <div
+              onClick={() => setFilterSource(filterSource === 'meta' ? 'all' : 'meta')}
+              className={`p-4 rounded-2xl border transition-all cursor-pointer relative overflow-hidden ${
+                filterSource === 'meta'
+                  ? 'border-[#1877F2] bg-blue-50/70 shadow-md ring-2 ring-[#1877F2]/20'
+                  : 'border-blue-100 bg-gradient-to-b from-blue-50/30 to-white hover:border-blue-300 hover:shadow-sm'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#1877F2] text-white text-xs font-black shadow-xs">
+                    f
+                  </div>
+                  <div>
+                    <h3 className="text-[13px] font-black text-ink">Meta Campaign</h3>
+                    <p className="text-[10px] text-muted">Facebook / Instagram Ads</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-100/80 text-[#1877F2]">
+                  {sourceStats.metaPct}%
+                </span>
+              </div>
+
+              <div className="mt-4 flex items-baseline justify-between">
+                <span className="text-[28px] font-black text-[#1877F2] tracking-tight">
+                  {sourceStats.meta}
+                </span>
+                <span className="text-[11px] font-bold text-muted">
+                  {sourceStats.meta === 1 ? 'student' : 'students'}
+                </span>
+              </div>
+
+              {/* Visual Indicator */}
+              <div className="mt-2.5 h-2 w-full rounded-full bg-blue-100 overflow-hidden">
+                <div
+                  style={{
+                    width: `${
+                      sourceStats.maxVal > 0 ? (sourceStats.meta / sourceStats.maxVal) * 100 : 0
+                    }%`,
+                  }}
+                  className="h-full bg-[#1877F2] rounded-full transition-all duration-500"
+                />
+              </div>
+
+              <div className="mt-3 text-right">
+                <span className="text-[10px] font-bold text-[#1877F2]">
+                  {filterSource === 'meta' ? '✓ Showing Meta' : 'Click to filter →'}
+                </span>
+              </div>
+            </div>
+
+            {/* Google Card */}
+            <div
+              onClick={() => setFilterSource(filterSource === 'google' ? 'all' : 'google')}
+              className={`p-4 rounded-2xl border transition-all cursor-pointer relative overflow-hidden ${
+                filterSource === 'google'
+                  ? 'border-[#EA4335] bg-red-50/70 shadow-md ring-2 ring-[#EA4335]/20'
+                  : 'border-red-100 bg-gradient-to-b from-red-50/30 to-white hover:border-red-300 hover:shadow-sm'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#EA4335] text-white text-xs font-black shadow-xs">
+                    G
+                  </div>
+                  <div>
+                    <h3 className="text-[13px] font-black text-ink">Google Campaign</h3>
+                    <p className="text-[10px] text-muted">Search / YouTube Ads</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-red-100/80 text-red-600">
+                  {sourceStats.googlePct}%
+                </span>
+              </div>
+
+              <div className="mt-4 flex items-baseline justify-between">
+                <span className="text-[28px] font-black text-[#EA4335] tracking-tight">
+                  {sourceStats.google}
+                </span>
+                <span className="text-[11px] font-bold text-muted">
+                  {sourceStats.google === 1 ? 'student' : 'students'}
+                </span>
+              </div>
+
+              {/* Visual Indicator */}
+              <div className="mt-2.5 h-2 w-full rounded-full bg-red-100 overflow-hidden">
+                <div
+                  style={{
+                    width: `${
+                      sourceStats.maxVal > 0 ? (sourceStats.google / sourceStats.maxVal) * 100 : 0
+                    }%`,
+                  }}
+                  className="h-full bg-[#EA4335] rounded-full transition-all duration-500"
+                />
+              </div>
+
+              <div className="mt-3 text-right">
+                <span className="text-[10px] font-bold text-red-600">
+                  {filterSource === 'google' ? '✓ Showing Google' : 'Click to filter →'}
+                </span>
+              </div>
+            </div>
+
+            {/* Direct / Organic Card */}
+            <div
+              onClick={() => setFilterSource(filterSource === 'direct' ? 'all' : 'direct')}
+              className={`p-4 rounded-2xl border transition-all cursor-pointer relative overflow-hidden ${
+                filterSource === 'direct'
+                  ? 'border-slate-500 bg-slate-100 shadow-md ring-2 ring-slate-400/20'
+                  : 'border-slate-200 bg-gradient-to-b from-slate-50 to-white hover:border-slate-300 hover:shadow-sm'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-600 text-white text-xs font-black shadow-xs">
+                    🌐
+                  </div>
+                  <div>
+                    <h3 className="text-[13px] font-black text-ink">Direct / Organic</h3>
+                    <p className="text-[10px] text-muted">Direct Links & Referrals</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-200 text-slate-700">
+                  {sourceStats.directPct}%
+                </span>
+              </div>
+
+              <div className="mt-4 flex items-baseline justify-between">
+                <span className="text-[28px] font-black text-slate-700 tracking-tight">
+                  {sourceStats.direct}
+                </span>
+                <span className="text-[11px] font-bold text-muted">
+                  {sourceStats.direct === 1 ? 'student' : 'students'}
+                </span>
+              </div>
+
+              {/* Visual Indicator */}
+              <div className="mt-2.5 h-2 w-full rounded-full bg-slate-200 overflow-hidden">
+                <div
+                  style={{
+                    width: `${
+                      sourceStats.maxVal > 0 ? (sourceStats.direct / sourceStats.maxVal) * 100 : 0
+                    }%`,
+                  }}
+                  className="h-full bg-slate-500 rounded-full transition-all duration-500"
+                />
+              </div>
+
+              <div className="mt-3 text-right">
+                <span className="text-[10px] font-bold text-slate-600">
+                  {filterSource === 'direct' ? '✓ Showing Direct' : 'Click to filter →'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Action Controls & Filters Bar */}
         <div className="soft-card p-4 sm:p-5 border border-line bg-white mb-6">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
@@ -565,43 +912,94 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Filter Pills */}
-            <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-0">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted hidden md:inline">
-                Status:
-              </span>
-              <button
-                type="button"
-                onClick={() => setFilterIncluded('all')}
-                className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition shrink-0 cursor-pointer ${
-                  filterIncluded === 'all'
-                    ? 'bg-[#090BC2] text-white'
-                    : 'bg-lavender text-muted hover:text-ink'
-                }`}
-              >
-                All ({registrations.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterIncluded('included')}
-                className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition shrink-0 cursor-pointer ${
-                  filterIncluded === 'included'
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-lavender text-muted hover:text-ink'
-                }`}
-              >
-                Included ({stats.included})
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilterIncluded('pending')}
-                className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition shrink-0 cursor-pointer ${
-                  filterIncluded === 'pending'
-                    ? 'bg-amber-600 text-white'
-                    : 'bg-lavender text-muted hover:text-ink'
-                }`}
-              >
-                Pending ({stats.total - stats.included})
-              </button>
+            <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+              {/* Status Filter */}
+              <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-line">
+                <button
+                  type="button"
+                  onClick={() => setFilterIncluded('all')}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition shrink-0 cursor-pointer ${
+                    filterIncluded === 'all'
+                      ? 'bg-[#090BC2] text-white shadow-xs'
+                      : 'text-muted hover:text-ink'
+                  }`}
+                >
+                  All ({registrations.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterIncluded('included')}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition shrink-0 cursor-pointer ${
+                    filterIncluded === 'included'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'text-muted hover:text-ink'
+                  }`}
+                >
+                  Included ({stats.included})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterIncluded('pending')}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition shrink-0 cursor-pointer ${
+                    filterIncluded === 'pending'
+                      ? 'bg-amber-600 text-white shadow-xs'
+                      : 'text-muted hover:text-ink'
+                  }`}
+                >
+                  Pending ({stats.total - stats.included})
+                </button>
+              </div>
+
+              {/* Source Filter */}
+              <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-line">
+                <span className="text-[10px] font-black uppercase tracking-wider text-muted px-1 hidden lg:inline">
+                  Source:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setFilterSource('all')}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition shrink-0 cursor-pointer ${
+                    filterSource === 'all'
+                      ? 'bg-slate-800 text-white shadow-xs'
+                      : 'text-muted hover:text-ink'
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterSource('meta')}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition shrink-0 cursor-pointer ${
+                    filterSource === 'meta'
+                      ? 'bg-[#1877F2] text-white shadow-xs'
+                      : 'text-[#1877F2] hover:bg-blue-50'
+                  }`}
+                >
+                  Meta ({sourceStats.meta})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterSource('google')}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition shrink-0 cursor-pointer ${
+                    filterSource === 'google'
+                      ? 'bg-[#EA4335] text-white shadow-xs'
+                      : 'text-[#EA4335] hover:bg-red-50'
+                  }`}
+                >
+                  Google ({sourceStats.google})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterSource('direct')}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition shrink-0 cursor-pointer ${
+                    filterSource === 'direct'
+                      ? 'bg-slate-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  Direct ({sourceStats.direct})
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -650,7 +1048,8 @@ export default function AdminDashboardPage() {
                   <thead>
                     <tr className="border-b border-line bg-[#fafafc] text-[10px] uppercase font-black tracking-wider text-muted">
                       <th className="py-3.5 px-4">Student Details</th>
-                      <th className="py-3.5 px-4">Payment &amp; Ref</th>
+                      <th className="py-3.5 px-4">Campaign Source</th>
+                      <th className="py-3.5 px-4">Registration &amp; Ref</th>
                       <th className="py-3.5 px-4 text-center">Mark Included</th>
                       <th className="py-3.5 px-4 text-right">WhatsApp Community</th>
                     </tr>
@@ -705,11 +1104,16 @@ export default function AdminDashboardPage() {
                             </div>
                           </td>
 
+                          {/* Acquisition Source */}
+                          <td className="py-4 px-4 whitespace-nowrap">
+                            {getSourceBadge(student.source)}
+                          </td>
+
                           {/* Payment & Ref */}
                           <td className="py-4 px-4">
                             <div className="inline-flex items-center gap-1 rounded-md bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] font-black text-emerald-700">
                               <span>✓</span>
-                              <span>₦{(student.amount || 30000).toLocaleString()} {student.currency || 'NGN'}</span>
+                              <span>{student.amount ? `₦${student.amount.toLocaleString()} ${student.currency || 'NGN'}` : '100% Free'}</span>
                             </div>
                             <div className="mt-1 font-mono text-[10px] text-muted truncate max-w-[140px]" title={student.checkout_id}>
                               {student.checkout_id}
@@ -836,10 +1240,13 @@ export default function AdminDashboardPage() {
                         student.isIncluded ? 'bg-emerald-50/20' : 'bg-white'
                       }`}
                     >
-                      {/* Top Row: Name and Payment Badge */}
+                      {/* Top Row: Name, Source Badge, and Enrollment Status */}
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <h3 className="font-bold text-[14px] text-ink">{student.fullname}</h3>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-bold text-[14px] text-ink">{student.fullname}</h3>
+                            {getSourceBadge(student.source)}
+                          </div>
                           <a
                             href={`mailto:${student.email}`}
                             className="text-muted text-[11px] hover:text-[#090BC2] break-all"
@@ -848,7 +1255,7 @@ export default function AdminDashboardPage() {
                           </a>
                         </div>
                         <span className="shrink-0 inline-flex items-center gap-1 rounded-md bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-black text-emerald-700">
-                          ₦{(student.amount || 30000).toLocaleString()}
+                          {student.amount ? `₦${student.amount.toLocaleString()}` : '100% Free'}
                         </span>
                       </div>
 

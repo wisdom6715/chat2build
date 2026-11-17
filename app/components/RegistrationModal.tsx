@@ -94,6 +94,17 @@ export function RegistrationModal({
         // Non-critical
       }
 
+      let detectedSource = 'direct'
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search)
+        detectedSource =
+          params.get('sources') ||
+          params.get('source') ||
+          sessionStorage.getItem('c2b_source') ||
+          localStorage.getItem('c2b_source') ||
+          'direct'
+      }
+
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -101,6 +112,8 @@ export function RegistrationModal({
           fullname: name.trim(),
           email: email.trim(),
           phone_number: phone.trim(),
+          source: detectedSource,
+          sources: detectedSource,
         }),
       })
 

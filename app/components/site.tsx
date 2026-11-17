@@ -44,6 +44,21 @@ const SectionLabel = ({ children, yellow = false }: { children: React.ReactNode;
 
 export function Header() {
   const router = useRouter()
+  const handleRegisterClick = () => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const source =
+        params.get('sources') ||
+        params.get('source') ||
+        params.get('utm_source') ||
+        sessionStorage.getItem('c2b_source')
+      if (source) {
+        router.push(`/registration?sources=${encodeURIComponent(source)}`)
+        return
+      }
+    }
+    router.push('/registration')
+  }
   const [open, setOpen] = useState(false)
   const scrollToPricing = useScrollToPricing()
   const links = [['About', '#about'], ['Features', '#features'], ['Pricing', '#pricing'], ['FAQ', '#faq'], ['Contact', '#contact']]
@@ -67,7 +82,7 @@ export function Header() {
         <div className="hidden items-center gap-4 md:flex">
           <button
             type="button"
-            onClick={() => router.push('/registration')}
+            onClick={handleRegisterClick}
             className="cursor-pointer rounded-md bg-[#090BC2] px-4 py-2.5 text-[14px] font-bold text-white transition hover:bg-[#080981]"
           >
             Register Now
@@ -215,6 +230,21 @@ const benefits = [
 export function PricingSection() {
   // This is the ONLY register button that goes to the registration page
   const router = useRouter()
+  const handleRegisterClick = () => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const source =
+        params.get('sources') ||
+        params.get('source') ||
+        params.get('utm_source') ||
+        sessionStorage.getItem('c2b_source')
+      if (source) {
+        router.push(`/registration?sources=${encodeURIComponent(source)}`)
+        return
+      }
+    }
+    router.push('/registration')
+  }
 
   return (
     <section className="border-y border-line bg-[#fcfcff]" id="pricing">
@@ -248,7 +278,7 @@ export function PricingSection() {
           </ul>
           <button
             type="button"
-            onClick={() => router.push('/registration')}
+            onClick={handleRegisterClick}
             className="primary-button mt-6 w-full cursor-pointer font-black text-center"
           >
             Register for Free →

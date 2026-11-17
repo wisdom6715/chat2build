@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { WhatsAppSupport } from '../components/WhatsApp'
 
 const ASSISTANT_PHONE = process.env.NEXT_PUBLIC_VIRTUAL_ASSISTANT_PHONE || '09139249580'
@@ -18,14 +18,39 @@ const perks = [
   '100% Free enrollment — zero hidden charges',
 ]
 
-export default function RegistrationPage() {
+function RegistrationContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+
   const [fullname, setFullname] = useState('')
   const [email, setEmail] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [redirectUrl, setRedirectUrl] = useState('')
+  const [campaignSource, setCampaignSource] = useState('direct')
+
+  useEffect(() => {
+    const rawSource =
+      searchParams.get('sources') ||
+      searchParams.get('source') ||
+      searchParams.get('utm_source')
+
+    if (rawSource) {
+      const clean = rawSource.toLowerCase().trim()
+      setCampaignSource(clean)
+      try {
+        sessionStorage.setItem('c2b_source', clean)
+        localStorage.setItem('c2b_source', clean)
+      } catch {}
+    } else {
+      try {
+        const cached =
+          sessionStorage.getItem('c2b_source') || localStorage.getItem('c2b_source')
+        if (cached) setCampaignSource(cached.toLowerCase().trim())
+      } catch {}
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -65,6 +90,13 @@ export default function RegistrationPage() {
         // Non-critical: ignore quota restrictions in private browsing
       }
 
+      // Determine final acquisition source
+      const finalSource =
+        campaignSource ||
+        searchParams.get('sources') ||
+        searchParams.get('source') ||
+        'direct'
+
       // 2. Call backend to complete free registration & persist in Firebase Firestore
       const res = await fetch('/api/checkout', {
         method: 'POST',
@@ -73,6 +105,8 @@ export default function RegistrationPage() {
           fullname: cleanName,
           email: cleanEmail,
           phone_number: cleanPhone,
+          source: finalSource,
+          sources: finalSource,
         }),
       })
 
@@ -310,5 +344,22 @@ export default function RegistrationPage() {
       {/* Floating WhatsApp Support */}
       <WhatsAppSupport phone={ASSISTANT_PHONE} />
     </div>
+  )
+}
+
+export default function RegistrationPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#fafafc]">
+          <div className="text-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#090BC2] border-t-transparent mx-auto" />
+            <p className="mt-3 text-[13px] font-semibold text-muted">Loading registration...</p>
+          </div>
+        </div>
+      }
+    >
+      <RegistrationContent />
+    </Suspense>
   )
 }
