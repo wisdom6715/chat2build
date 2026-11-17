@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useId, useRef, useState } from 'react'
+import { ASSISTANT_PHONE } from '../lib/constants'
 
 type Topic = { label: string; message: string }
 
@@ -65,7 +66,7 @@ function ArrowIcon() {
 }
 
 export function WhatsAppSupport({
-  phone = process.env.NEXT_PUBLIC_VIRTUAL_ASSISTANT_PHONE || '09139249580',
+  phone = ASSISTANT_PHONE,
   defaultMessage = 'Hi Chat2Build team, I have a question about the bootcamp.',
   topics = DEFAULT_TOPICS,
 }: WhatsAppSupportProps) {

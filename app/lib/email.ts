@@ -1,15 +1,16 @@
 import { Resend } from 'resend'
 import nodemailer from 'nodemailer'
+import {
+  WHATSAPP_COMMUNITY_URL,
+  WHATSAPP_GROUP_URL,
+  ASSISTANT_PHONE,
+  ASSISTANT_DIGITS,
+} from './constants'
 
-const ASSISTANT_PHONE = process.env.NEXT_PUBLIC_VIRTUAL_ASSISTANT_PHONE || '09139249580'
-const ASSISTANT_DIGITS = '234' + ASSISTANT_PHONE.replace(/\D/g, '').replace(/^0/, '')
+export { WHATSAPP_COMMUNITY_URL, WHATSAPP_GROUP_URL }
 
 export function getWhatsAppCommunityUrl(): string {
-  return (
-    process.env.WHATSAPP_COMMUNITY_URL?.trim() ||
-    process.env.NEXT_PUBLIC_WHATSAPP_COMMUNITY_URL?.trim() ||
-    'https://chat.whatsapp.com/JX9whdzwMAdG1NhD5M5XvS?s=cl&p=a&mlu=4&ilr=4'
-  )
+  return WHATSAPP_COMMUNITY_URL
 }
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY?.trim() || ''

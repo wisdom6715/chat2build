@@ -3,8 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { WhatsAppSupport } from '../components/WhatsApp'
-
-const ASSISTANT_PHONE = process.env.NEXT_PUBLIC_VIRTUAL_ASSISTANT_PHONE || '09139249580'
+import { ASSISTANT_PHONE } from '../lib/constants'
 
 const perks = [
   'Bootcamp commencement date: November 22, 2026',

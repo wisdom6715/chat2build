@@ -3,12 +3,12 @@
 import React, { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { WhatsAppIcon, WhatsAppSupport } from '../components/WhatsApp'
-
-const ASSISTANT_PHONE = process.env.NEXT_PUBLIC_VIRTUAL_ASSISTANT_PHONE || '09139249580'
-const ASSISTANT_DIGITS = '234' + ASSISTANT_PHONE.replace(/\D/g, '').replace(/^0/, '')
-const WHATSAPP_COMMUNITY_URL =
-  process.env.NEXT_PUBLIC_WHATSAPP_COMMUNITY_URL ||
-  'https://chat.whatsapp.com/JX9whdzwMAdG1NhD5M5XvS?s=cl&p=a&mlu=4&ilr=4'
+import {
+  WHATSAPP_COMMUNITY_URL,
+  WHATSAPP_GROUP_URL,
+  ASSISTANT_PHONE,
+  ASSISTANT_DIGITS,
+} from '../lib/constants'
 
 function WelcomeContent() {
   const searchParams = useSearchParams()
