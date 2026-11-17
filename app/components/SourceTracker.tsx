@@ -2,21 +2,18 @@
 
 import { useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { extractSourceFromParams } from '../lib/constants'
 
 function TrackerInner() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    const raw =
-      searchParams.get('sources') ||
-      searchParams.get('source') ||
-      searchParams.get('utm_source')
+    const detected = extractSourceFromParams(searchParams)
 
-    if (raw) {
-      const clean = raw.toLowerCase().trim()
+    if (detected && detected !== 'direct') {
       try {
-        sessionStorage.setItem('c2b_source', clean)
-        localStorage.setItem('c2b_source', clean)
+        sessionStorage.setItem('c2b_source', detected)
+        localStorage.setItem('c2b_source', detected)
       } catch {}
     }
   }, [searchParams])

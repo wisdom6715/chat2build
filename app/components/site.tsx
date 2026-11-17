@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useState, useRef } from 'react'
+import { extractSourceFromParams } from '../lib/constants'
 
 
 // All other "Register" buttons: smooth-scroll to the pricing section
@@ -47,11 +48,9 @@ export function Header() {
   const handleRegisterClick = () => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
-      const source =
-        params.get('sources') ||
-        params.get('source') ||
-        params.get('utm_source') ||
-        sessionStorage.getItem('c2b_source')
+      const detected = extractSourceFromParams(params)
+      const stored = sessionStorage.getItem('c2b_source') || localStorage.getItem('c2b_source')
+      const source = (detected && detected !== 'direct') ? detected : stored
       if (source) {
         router.push(`/registration?sources=${encodeURIComponent(source)}`)
         return
@@ -231,11 +230,9 @@ export function PricingSection() {
   const handleRegisterClick = () => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
-      const source =
-        params.get('sources') ||
-        params.get('source') ||
-        params.get('utm_source') ||
-        sessionStorage.getItem('c2b_source')
+      const detected = extractSourceFromParams(params)
+      const stored = sessionStorage.getItem('c2b_source') || localStorage.getItem('c2b_source')
+      const source = (detected && detected !== 'direct') ? detected : stored
       if (source) {
         router.push(`/registration?sources=${encodeURIComponent(source)}`)
         return

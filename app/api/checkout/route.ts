@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '../../lib/firebase'
 import { collection, addDoc, getDocs, query, where, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { sendWelcomeEmail } from '../../lib/email'
+import { normalizeSource } from '../../lib/constants'
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,27 +23,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Please provide your phone / WhatsApp number.' }, { status: 400 })
     }
 
-    // Parse and normalize acquisition source (meta, google, direct, etc.)
-    const rawSource = (body.source || body.sources || '').trim().toLowerCase()
-    let source = 'direct'
-    if (
-      rawSource.includes('meta') ||
-      rawSource.includes('fb') ||
-      rawSource.includes('facebook') ||
-      rawSource.includes('instagram') ||
-      rawSource.includes('ig')
-    ) {
-      source = 'meta'
-    } else if (
-      rawSource.includes('google') ||
-      rawSource.includes('youtube') ||
-      rawSource.includes('yt') ||
-      rawSource.includes('adwords')
-    ) {
-      source = 'google'
-    } else if (rawSource && rawSource !== 'direct' && rawSource !== 'null' && rawSource !== 'undefined') {
-      source = rawSource
-    }
+    // Parse and normalize acquisition source (x, meta, google, direct, etc.)
+    const source = normalizeSource(body.source || body.sources || '')
 
     // 1. Check if student already registered with this email
     let docId = ''

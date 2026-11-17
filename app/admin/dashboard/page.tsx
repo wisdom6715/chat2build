@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { signOut } from 'firebase/auth'
 import { auth } from '../../lib/firebase'
 import { getAdminSession, clearAdminSession, AdminSession } from '../../lib/adminAuth'
+import { normalizeSource } from '../../lib/constants'
 
 interface StudentRegistration {
   id: string
@@ -67,15 +68,8 @@ function safeFormatDateShort(val: any): string {
 }
 
 function getSourceBadge(sourceRaw?: string) {
-  const s = (sourceRaw || 'direct').toLowerCase().trim()
-  if (
-    s === 'meta' ||
-    s.includes('meta') ||
-    s.includes('fb') ||
-    s.includes('facebook') ||
-    s.includes('instagram') ||
-    s.includes('ig')
-  ) {
+  const s = normalizeSource(sourceRaw)
+  if (s === 'meta') {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-blue-50 text-[#1877F2] border border-blue-200">
         <span className="h-1.5 w-1.5 rounded-full bg-[#1877F2] animate-pulse" />
@@ -83,17 +77,19 @@ function getSourceBadge(sourceRaw?: string) {
       </span>
     )
   }
-  if (
-    s === 'google' ||
-    s.includes('google') ||
-    s.includes('youtube') ||
-    s.includes('yt') ||
-    s.includes('adwords')
-  ) {
+  if (s === 'google') {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-red-50 text-red-600 border border-red-200">
         <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
         <span>🔍 Google Ads</span>
+      </span>
+    )
+  }
+  if (s === 'x') {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-neutral-900 text-white border border-neutral-700">
+        <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+        <span>𝕏 Campaign</span>
       </span>
     )
   }
@@ -114,7 +110,7 @@ export default function AdminDashboardPage() {
   const [registrations, setRegistrations] = useState<StudentRegistration[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [filterIncluded, setFilterIncluded] = useState<'all' | 'included' | 'pending'>('all')
-  const [filterSource, setFilterSource] = useState<'all' | 'meta' | 'google' | 'direct'>('all')
+  const [filterSource, setFilterSource] = useState<'all' | 'meta' | 'google' | 'x' | 'direct'>('all')
 
   // Notification / Feedback banner
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
@@ -347,38 +343,11 @@ export default function AdminDashboardPage() {
       if (filterIncluded === 'pending') return !reg.isIncluded
 
       if (filterSource !== 'all') {
-        const s = (reg.source || 'direct').toLowerCase()
-        if (
-          filterSource === 'meta' &&
-          !s.includes('meta') &&
-          !s.includes('fb') &&
-          !s.includes('facebook') &&
-          !s.includes('instagram') &&
-          !s.includes('ig')
-        ) {
-          return false
-        }
-        if (
-          filterSource === 'google' &&
-          !s.includes('google') &&
-          !s.includes('youtube') &&
-          !s.includes('yt') &&
-          !s.includes('adwords')
-        ) {
-          return false
-        }
-        if (
-          filterSource === 'direct' &&
-          (s.includes('meta') ||
-            s.includes('google') ||
-            s.includes('youtube') ||
-            s.includes('facebook') ||
-            s.includes('instagram') ||
-            s.includes('fb') ||
-            s.includes('yt'))
-        ) {
-          return false
-        }
+        const s = normalizeSource(reg.source)
+        if (filterSource === 'meta' && s !== 'meta') return false
+        if (filterSource === 'google' && s !== 'google') return false
+        if (filterSource === 'x' && s !== 'x') return false
+        if (filterSource === 'direct' && s !== 'direct') return false
       }
 
       return true
@@ -394,28 +363,20 @@ export default function AdminDashboardPage() {
     return { total, included, slackSent, totalRevenue }
   }, [registrations])
 
-  // Campaign source analytics (Meta vs Google vs Direct)
+  // Campaign source analytics (Meta vs Google vs 𝕏 vs Direct)
   const sourceStats = useMemo(() => {
     let meta = 0
     let google = 0
+    let x = 0
     let direct = 0
 
     registrations.forEach((r) => {
-      const s = (r.source || 'direct').toLowerCase()
-      if (
-        s.includes('meta') ||
-        s.includes('fb') ||
-        s.includes('facebook') ||
-        s.includes('instagram') ||
-        s.includes('ig')
-      ) {
+      const s = normalizeSource(r.source)
+      if (s === 'x') {
+        x++
+      } else if (s === 'meta') {
         meta++
-      } else if (
-        s.includes('google') ||
-        s.includes('youtube') ||
-        s.includes('yt') ||
-        s.includes('adwords')
-      ) {
+      } else if (s === 'google') {
         google++
       } else {
         direct++
@@ -423,12 +384,13 @@ export default function AdminDashboardPage() {
     })
 
     const total = registrations.length
-    const maxVal = Math.max(meta, google, direct, 1)
+    const maxVal = Math.max(meta, google, x, direct, 1)
     const metaPct = total > 0 ? Math.round((meta / total) * 100) : 0
     const googlePct = total > 0 ? Math.round((google / total) * 100) : 0
-    const directPct = total > 0 ? Math.max(0, 100 - metaPct - googlePct) : 0
+    const xPct = total > 0 ? Math.round((x / total) * 100) : 0
+    const directPct = total > 0 ? Math.max(0, 100 - metaPct - googlePct - xPct) : 0
 
-    return { meta, google, direct, total, maxVal, metaPct, googlePct, directPct }
+    return { meta, google, x, direct, total, maxVal, metaPct, googlePct, xPct, directPct }
   }, [registrations])
 
   if (loading) {
@@ -668,10 +630,10 @@ export default function AdminDashboardPage() {
                 </span>
               </div>
               <h2 className="text-[17px] sm:text-[19px] font-black text-ink mt-1 tracking-tight">
-                Campaign Acquisition: Meta vs Google
+                Campaign Acquisition: Meta vs Google vs 𝕏
               </h2>
               <p className="text-[11px] text-muted">
-                Real-time breakdown of registered students based on marketing source query parameters (?sources=meta, ?sources=google)
+                Real-time breakdown of registered students based on marketing campaign query parameters (?sources=meta, ?sources=google, ?sources=x, ?utm_source=X)
               </p>
             </div>
 
@@ -700,6 +662,10 @@ export default function AdminDashboardPage() {
                   <span className="h-2.5 w-2.5 rounded-full bg-[#EA4335]" />
                   Google ({sourceStats.googlePct}%)
                 </span>
+                <span className="inline-flex items-center gap-1 text-neutral-900">
+                  <span className="h-2.5 w-2.5 rounded-full bg-neutral-900" />
+                  𝕏 ({sourceStats.xPct}%)
+                </span>
                 <span className="inline-flex items-center gap-1 text-slate-500">
                   <span className="h-2.5 w-2.5 rounded-full bg-slate-400" />
                   Direct ({sourceStats.directPct}%)
@@ -720,6 +686,11 @@ export default function AdminDashboardPage() {
                 title={`Google: ${sourceStats.google} (${sourceStats.googlePct}%)`}
               />
               <div
+                style={{ width: `${sourceStats.xPct}%` }}
+                className="h-full bg-neutral-900 transition-all duration-500"
+                title={`𝕏 (Twitter): ${sourceStats.x} (${sourceStats.xPct}%)`}
+              />
+              <div
                 style={{ width: `${sourceStats.directPct}%` }}
                 className="h-full bg-slate-400 transition-all duration-500"
                 title={`Direct/Other: ${sourceStats.direct} (${sourceStats.directPct}%)`}
@@ -728,7 +699,7 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Interactive Comparison Bar Cards */}
-          <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
             {/* Meta Card */}
             <div
               onClick={() => setFilterSource(filterSource === 'meta' ? 'all' : 'meta')}
@@ -829,6 +800,58 @@ export default function AdminDashboardPage() {
               <div className="mt-3 text-right">
                 <span className="text-[10px] font-bold text-red-600">
                   {filterSource === 'google' ? '✓ Showing Google' : 'Click to filter →'}
+                </span>
+              </div>
+            </div>
+
+            {/* 𝕏 (Twitter) Card */}
+            <div
+              onClick={() => setFilterSource(filterSource === 'x' ? 'all' : 'x')}
+              className={`p-4 rounded-2xl border transition-all cursor-pointer relative overflow-hidden ${
+                filterSource === 'x'
+                  ? 'border-neutral-900 bg-neutral-100 shadow-md ring-2 ring-neutral-900/20'
+                  : 'border-neutral-200 bg-gradient-to-b from-neutral-50/50 to-white hover:border-neutral-400 hover:shadow-sm'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-900 text-white text-xs font-black shadow-xs">
+                    𝕏
+                  </div>
+                  <div>
+                    <h3 className="text-[13px] font-black text-ink">𝕏 Campaign</h3>
+                    <p className="text-[10px] text-muted">𝕏 / Twitter Ads & Posts</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-neutral-200 text-neutral-900">
+                  {sourceStats.xPct}%
+                </span>
+              </div>
+
+              <div className="mt-4 flex items-baseline justify-between">
+                <span className="text-[28px] font-black text-neutral-900 tracking-tight">
+                  {sourceStats.x}
+                </span>
+                <span className="text-[11px] font-bold text-muted">
+                  {sourceStats.x === 1 ? 'student' : 'students'}
+                </span>
+              </div>
+
+              {/* Visual Indicator */}
+              <div className="mt-2.5 h-2 w-full rounded-full bg-neutral-200 overflow-hidden">
+                <div
+                  style={{
+                    width: `${
+                      sourceStats.maxVal > 0 ? (sourceStats.x / sourceStats.maxVal) * 100 : 0
+                    }%`,
+                  }}
+                  className="h-full bg-neutral-900 rounded-full transition-all duration-500"
+                />
+              </div>
+
+              <div className="mt-3 text-right">
+                <span className="text-[10px] font-bold text-neutral-900">
+                  {filterSource === 'x' ? '✓ Showing 𝕏' : 'Click to filter →'}
                 </span>
               </div>
             </div>
@@ -987,6 +1010,17 @@ export default function AdminDashboardPage() {
                   }`}
                 >
                   Google ({sourceStats.google})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterSource('x')}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition shrink-0 cursor-pointer ${
+                    filterSource === 'x'
+                      ? 'bg-neutral-900 text-white shadow-xs'
+                      : 'text-neutral-900 hover:bg-neutral-100'
+                  }`}
+                >
+                  𝕏 ({sourceStats.x})
                 </button>
                 <button
                   type="button"

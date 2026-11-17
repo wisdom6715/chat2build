@@ -3,7 +3,11 @@
 import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { WhatsAppSupport } from '../components/WhatsApp'
-import { ASSISTANT_PHONE } from '../lib/constants'
+import {
+  ASSISTANT_PHONE,
+  extractSourceFromParams,
+  normalizeSource,
+} from '../lib/constants'
 
 const perks = [
   'Bootcamp commencement date: November 22, 2026',
@@ -30,23 +34,21 @@ function RegistrationContent() {
   const [campaignSource, setCampaignSource] = useState('direct')
 
   useEffect(() => {
-    const rawSource =
-      searchParams.get('sources') ||
-      searchParams.get('source') ||
-      searchParams.get('utm_source')
+    const detected = extractSourceFromParams(searchParams)
 
-    if (rawSource) {
-      const clean = rawSource.toLowerCase().trim()
-      setCampaignSource(clean)
+    if (detected && detected !== 'direct') {
+      setCampaignSource(detected)
       try {
-        sessionStorage.setItem('c2b_source', clean)
-        localStorage.setItem('c2b_source', clean)
+        sessionStorage.setItem('c2b_source', detected)
+        localStorage.setItem('c2b_source', detected)
       } catch {}
     } else {
       try {
         const cached =
           sessionStorage.getItem('c2b_source') || localStorage.getItem('c2b_source')
-        if (cached) setCampaignSource(cached.toLowerCase().trim())
+        if (cached) {
+          setCampaignSource(normalizeSource(cached))
+        }
       } catch {}
     }
   }, [searchParams])
@@ -90,10 +92,10 @@ function RegistrationContent() {
       }
 
       // Determine final acquisition source
+      const paramDetected = extractSourceFromParams(searchParams)
       const finalSource =
-        campaignSource ||
-        searchParams.get('sources') ||
-        searchParams.get('source') ||
+        (paramDetected && paramDetected !== 'direct' ? paramDetected : null) ||
+        (campaignSource && campaignSource !== 'direct' ? campaignSource : null) ||
         'direct'
 
       // 2. Call backend to complete free registration & persist in Firebase Firestore
