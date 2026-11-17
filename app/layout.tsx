@@ -8,9 +8,9 @@ const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-montserrat
 
 const siteUrl = 'https://chat2build.pro' // replace with your real domain
 const siteName = 'Chat2Build'
-const title = 'Chat2Build — Build Your First Mobile App with AI (4-Week Bootcamp)'
+const title = 'Chat2Build — Build Your First Web App with AI (2-Week Bootcamp)'
 const description =
-  'A 4-week, 12-class bootcamp for non-programmers: use AI to design, build with Flutter & Firebase, and publish your first app to Google Play and the App Store.'
+  'A 2-week intensive bootcamp for non-programmers: use AI to design, build, and deploy production-ready web applications with zero prior coding experience. Commences November 22, 2026.'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -21,17 +21,15 @@ export const metadata: Metadata = {
   description,
   applicationName: siteName,
   keywords: [
-    'AI app development bootcamp',
-    'build mobile app with AI',
+    'AI web app development bootcamp',
+    'build web app with AI',
     'vibe coding bootcamp',
-    'learn Flutter',
-    'Flutter and Firebase course',
-    'mobile app development for beginners',
-    'no-code to code mobile apps',
-    'publish app to Google Play',
-    'publish app to App Store',
+    'learn Next.js and Firebase',
+    'web app development for beginners',
+    'no-code to code web apps',
+    'deploy web app to custom domain',
     'AI-assisted coding',
-    'app development for non-programmers',
+    'web development for non-programmers',
     'Git and GitHub for beginners',
   ],
   authors: [{ name: siteName }],
@@ -103,28 +101,24 @@ const jsonLd = {
     {
       '@type': 'Course',
       '@id': `${siteUrl}/`,
-      name: 'Chat2Build: AI Web & Mobile App Development Bootcamp',
+      name: 'Chat2Build: AI Web App Development Bootcamp',
       description:
-        'A 4-week, 12-class bootcamp teaching non-programmers how to build and publish mobile apps with AI: ideation, UI design, Git and GitHub, Flutter, Firebase, debugging, testing, and deployment to Google Play and the Apple App Store.',
+        'A 2-week intensive bootcamp teaching non-programmers how to build, test, and deploy production-ready web applications using AI: ideation, UI design, Git and GitHub, Stitch, Firebase, SEO, and live cloud deployment.',
       url: siteUrl,
       provider: { '@id': `${siteUrl}/#organization` },
       educationalLevel: 'Beginner',
       inLanguage: 'en',
       teaches: [
-        'Turning an idea into an app (ideation and MVP thinking)',
-        'UI/UX design and wireframing',
+        'Turning an idea into a web app (ideation and MVP thinking)',
+        'UI/UX design and wireframing with Stitch',
         'Version control with Git and GitHub',
-        'Flutter and Dart fundamentals',
         'Firebase authentication, database, and storage',
-        'AI-assisted coding and debugging',
-        'Building an Android APK/AAB and iOS build',
-        'Publishing to Google Play and the Apple App Store',
+        'AI-assisted coding and debugging with modern AI agents',
+        'SEO optimization and web analytics setup',
+        'Deploying live to production with custom domains',
       ],
-      timeRequired: 'P4W',
+      timeRequired: 'P2W',
       numberOfCredits: undefined,
-      // Add these once you have the details:
-      // hasCourseInstance: { '@type': 'CourseInstance', courseMode: 'Online', startDate: '2026-11-01' },
-      // offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD', url: `${siteUrl}/#pricing` },
     },
   ],
 }

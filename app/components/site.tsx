@@ -126,13 +126,13 @@ export function Hero() {
       <div className="shell text-center">
         <div className="flex items-center justify-center">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-[#090BC2]/10 border border-[#090BC2]/25 px-3.5 py-1 text-[12px] font-bold text-[#090BC2]">
-            <span>Commences November 15, 2026</span>
+            <span>Commences November 22, 2026</span>
           </span>
         </div>
-        <h1 className="mx-auto mt-5 md:max-w-3xl text-[30px] font-semibold leading-[1.07] tracking-[-0.055em] text-[#090BC2] sm:text-[30px]">YOUR APP. <span>BUILT WITH</span><span className='bg-lemon p-1 italic '>AI</span> </h1>
-        <p className="display mx-auto mt-4 max-w-3xl text-[25px] leading-[1.08] text-ink sm:text-[35px]">From idea to App Store &amp; Google Play without learning to code.</p>
-        <p className="muted-copy mx-auto mt-5 max-w-lg text-[12px] sm:text-[16px]">Learn how to build, test, and launch real web and mobile apps using<br className="hidden sm:block" /> AI tools starting from zero.</p>
-        <button type="button" onClick={scrollToPricing} className="primary-button mt-6 cursor-pointer">Register Now </button>
+        <h1 className="mx-auto mt-5 md:max-w-3xl text-[30px] font-semibold leading-[1.07] tracking-[-0.055em] text-[#090BC2] sm:text-[30px]">YOUR WEB APP. <span>BUILT WITH</span><span className='bg-lemon p-1 italic '>AI</span> </h1>
+        <p className="display mx-auto mt-4 max-w-3xl text-[25px] leading-[1.08] text-ink sm:text-[35px]">From idea to a live, production Web App without learning to code.</p>
+        <p className="muted-copy mx-auto mt-5 max-w-lg text-[12px] sm:text-[16px]">Learn how to design, build, and deploy production-ready web apps with custom domains &amp; SEO using modern AI workflows starting from zero.</p>
+        <button type="button" onClick={scrollToPricing} className="primary-button mt-6 cursor-pointer">Register for Free →</button>
 
         {/* Video Player Slot */}
         <div className="relative mx-auto mt-14 max-w-[960px] overflow-hidden rounded-2xl border border-[#ececf5] bg-[#0c0d1e] p-2 sm:p-3.5 shadow-[0_20px_70px_rgba(29,25,185,.12)] sm:mt-16">
@@ -170,9 +170,9 @@ export function Hero() {
 }
 
 const learningCards = [
-  { title: 'Debugging AI Generated Code', copy: 'Learn to read error messages, troubleshoot issues, and fix broken features without getting stuck.', image: '/lady.png', tag: 'learn the why' },
-  { title: 'Deploying Your App Online', copy: 'Learn how to use GitHub, hosting platforms, and deployment tools to make your app accessible to real users.', image: '/publish.png', tag: 'ship it live' },
-  { title: 'App Store & Play Store Launch', copy: 'Understand store requirements, common rejection reasons, and how to successfully publish your app on the App Store and Play Store.', image: '/appstore.png', tag: 'go public' },
+  { title: 'Debugging AI Generated Code', copy: 'Learn how to interpret console errors, steer AI agents, and fix broken features effortlessly without getting stuck.', image: '/lady.png', tag: 'learn the why' },
+  { title: 'Instant Web App Deployment', copy: 'Connect Git and modern cloud hosting to push your web application live with a custom domain accessible on all devices.', image: '/publish.png', tag: 'ship it live' },
+  { title: 'SEO, Analytics & User Launch', copy: 'Optimize your web application for Google Search (SEO), set up traffic analytics, and prepare your app for real daily users.', image: '/appstore.png', tag: 'go public' },
 ]
 
 export function LearningSection() {
@@ -180,8 +180,8 @@ export function LearningSection() {
     <section className="bg-lavender" id="features">
       <div className="shell section-space">
         <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
-          <div><p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#090BC2]">the missing link</p><h2 className="mt-4 max-w-lg text-[23px] font-bold leading-tight tracking-[-0.045em] text-ink sm:text-[28px]">AI Can Generate Code.<br />Learn How To Fix Errors and Build Real Projects.</h2></div>
-          <div className="max-w-sm md:text-right"><p className="muted-copy">You don&apos;t need comprehensive years to learn how to use AI to build and launch real web and mobile apps on the App Store and Google Play.</p><a href="#roadmap" className="mt-4 inline-flex items-center gap-2 text-[11px] font-bold text-[#090BC2]">Learn More About the Program <Arrow /></a></div>
+          <div><p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#090BC2]">the missing link</p><h2 className="mt-4 max-w-lg text-[23px] font-bold leading-tight tracking-[-0.045em] text-ink sm:text-[28px]">AI Can Generate Code.<br />Learn How To Fix Errors and Build Real Web Apps.</h2></div>
+          <div className="max-w-sm md:text-right"><p className="muted-copy">You don&apos;t need years of programming experience to build and deploy high-performing web applications to the world using AI.</p><a href="#roadmap" className="mt-4 inline-flex items-center gap-2 text-[11px] font-bold text-[#090BC2]">Explore the Curriculum <Arrow /></a></div>
         </div>
         <div className="mt-12 grid gap-5 md:grid-cols-3">
           {learningCards.map((card) => <article key={card.title} className="soft-card overflow-hidden p-2 transition hover:-translate-y-1 hover:shadow-card"><div className="relative h-44 overflow-hidden rounded-xl bg-[#ddd]"><img src={card.image} alt="" className="h-full w-full object-cover transition duration-500 hover:scale-105" /><span className="absolute bottom-3 left-3 rounded bg-white/90 px-2 py-1 text-[8px] font-bold uppercase tracking-wider text-[#090BC2]">{card.tag}</span></div><div className="p-4 pb-5"><h3 className="text-[16px] font-bold tracking-[-0.04em] text-ink">{card.title}</h3><p className="mt-2 text-[11px] leading-5 text-muted">{card.copy}</p></div></article>)}
@@ -192,27 +192,25 @@ export function LearningSection() {
 }
 
 const roadmap = [
-  { week: 'week 01', title: 'Idea & Design', copy: 'Scoping user stories with Claude, creating high-fidelity wireframes in Stitch, database schema, product specs and connecting MCPs.', milestone: 'Interactive fully deployed Web application ', icon: '⌁' },
-  { week: 'week 02', title: 'Mobile Conversion', copy: 'building Mobile Apps into cross-platform iOS & Android apps using Flutter', milestone: 'First TestFlight Beta Build', icon: '◫' },
-  { week: 'week 03', title: 'Payments & Polish', copy: 'Setup monetization, Apple Pay integration, offline caching, push notifications, runtime performance optimization, real way to make money with what you build', milestone: 'Verified N / S Checkout Flow', icon: '▣' },
-  { week: 'week 04', title: 'Publish & Launch', copy: 'Packaging production release builds, passing app review on Apple & Google Play, and analytics setup..', milestone: 'Public Store Status Approval', icon: '↗' },
+  { week: 'week 01', title: 'Ideation, UI Architecture & Database', copy: 'Scope user flows with AI agents, generate high-fidelity UI with Stitch, configure database schemas with Firebase, and build core web app logic.', milestone: 'Fully functional responsive web application', icon: '⌁' },
+  { week: 'week 02', title: 'Full-Stack Integration, SEO & Launch', copy: 'Integrate user authentication, connect APIs, configure search engine optimization (SEO), attach custom domains, and deploy live to production.', milestone: 'Live web app deployed to the internet & shared with users', icon: '↗' },
 ]
 
 export function RoadmapSection() {
-  return <section className="bg-white" id="roadmap"><div className="shell section-space"><div className="mx-auto max-w-2xl text-center"><SectionLabel yellow>curriculum overview</SectionLabel><h2 className="display mt-5 text-[32px] leading-none text-ink sm:text-[39px]">Your Step-by-Step 4-Week Roadmap</h2><p className="muted-copy mx-auto mt-4 max-w-md">A step-by-step program that helps you turn your ideas into real apps and launch them on Playstore &amp; App Store.</p></div><div className="mx-auto mt-12 grid max-w-4xl gap-5 sm:grid-cols-2">{roadmap.map((item) => <article key={item.week} className="soft-card p-5 transition hover:border-[#080981]/30 hover:shadow-card"><div className="flex items-start justify-between"><span className="yellow-label">{item.week}</span><span className="text-lg text-[#080981]">{item.icon}</span></div><h3 className="mt-4 text-[16px] font-bold tracking-[-0.04em]">{item.title}</h3><p className="mt-2 min-h-[74px] text-[11px] leading-5 text-muted">{item.copy}</p><p className="mt-5 text-[9px] font-bold text-[#080981]">Milestone: {item.milestone}</p></article>)}</div></div></section>
+  return <section className="bg-white" id="roadmap"><div className="shell section-space"><div className="mx-auto max-w-2xl text-center"><SectionLabel yellow>curriculum overview</SectionLabel><h2 className="display mt-5 text-[32px] leading-none text-ink sm:text-[39px]">Your Step-by-Step 2-Week Web App Roadmap</h2><p className="muted-copy mx-auto mt-4 max-w-md">A focused, hands-on immersion designed to take you from a raw idea to a deployed web application with real users.</p></div><div className="mx-auto mt-12 grid max-w-4xl gap-5 sm:grid-cols-2">{roadmap.map((item) => <article key={item.week} className="soft-card p-5 transition hover:border-[#080981]/30 hover:shadow-card"><div className="flex items-start justify-between"><span className="yellow-label">{item.week}</span><span className="text-lg text-[#080981]">{item.icon}</span></div><h3 className="mt-4 text-[16px] font-bold tracking-[-0.04em]">{item.title}</h3><p className="mt-2 min-h-[74px] text-[11px] leading-5 text-muted">{item.copy}</p><p className="mt-5 text-[9px] font-bold text-[#080981]">Milestone: {item.milestone}</p></article>)}</div></div></section>
 }
 
 const audiences = [
-  ['Students & Recent Graduates', 'Have a business idea but no technical team? Learn how to build and launch your MVP using AI-powered tools.', '◒'],
-  ['Entrepreneurs & Business Owners', 'Turn your ideas into digital products, automate business processes, and create solutions that help your business grow.', '◯'],
-  ['Aspiring Startup Founders', 'Have a business idea but no technical team? Learn how to build and launch your MVP using AI-powered tools.', '◈'],
-  ['NYSC Members & Job Seekers', 'Build practical skills, create real-world projects, and improve your chances of securing internships and job opportunities.', '◌'],
-  ['Small Business Owners', 'Build custom tools, websites, and mobile apps that help you streamline operations and serve customers better.', '○'],
-  ['AI Enthusiasts', 'Go beyond using AI for simple tasks and learn how to build real products powered by AI.', '✧'],
+  ['Students & Recent Graduates', 'Build practical skills, create real-world portfolio projects, and launch web applications that prove your AI capability.', '◒'],
+  ['Entrepreneurs & Business Owners', 'Turn your ideas into digital products, automate business processes, and create custom web portals that help your business grow.', '◯'],
+  ['Aspiring Startup Founders', 'Have a business idea but no technical team? Learn how to build and launch your web MVP in 2 weeks using AI-powered tools.', '◈'],
+  ['NYSC Members & Job Seekers', 'Build high-demand AI development skills, ship real projects, and improve your chances of securing opportunities.', '◌'],
+  ['Freelancers & Agencies', 'Build custom client websites, web apps, and internal tools faster than ever with modern agent workflows.', '○'],
+  ['AI Enthusiasts', 'Go beyond using AI for chat and text generation—learn how to build real, functional web applications powered by AI.', '✧'],
 ]
 
 export function AudienceSection() {
-  return <section className="bg-white" id="about"><div className="shell section-space pt-4 sm:pt-10"><div className="mx-auto max-w-2xl text-center"><SectionLabel yellow>who this bootcamp is for</SectionLabel><h2 className="display mt-5 text-[32px] leading-none text-ink sm:text-[39px]">You don&apos;t need to be a programmer.</h2><p className="muted-copy mx-auto mt-4 max-w-lg">Designed for complete beginners who want to turn ideas into real web and mobile apps.</p></div><div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{audiences.map(([title, copy, icon]) => <article key={title} className="soft-card flex gap-3 p-4 transition hover:-translate-y-0.5 hover:shadow-card"><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-lavender text-lg text-[#080981]">{icon}</div><div><h3 className="text-[12px] font-bold tracking-[-0.02em]">{title}</h3><p className="mt-1.5 text-[10px] leading-4 text-muted">{copy}</p></div></article>)}</div></div></section>
+  return <section className="bg-white" id="about"><div className="shell section-space pt-4 sm:pt-10"><div className="mx-auto max-w-2xl text-center"><SectionLabel yellow>who this bootcamp is for</SectionLabel><h2 className="display mt-5 text-[32px] leading-none text-ink sm:text-[39px]">You don&apos;t need to be a programmer.</h2><p className="muted-copy mx-auto mt-4 max-w-lg">Designed for complete beginners who want to turn ideas into real, production-ready web applications.</p></div><div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{audiences.map(([title, copy, icon]) => <article key={title} className="soft-card flex gap-3 p-4 transition hover:-translate-y-0.5 hover:shadow-card"><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-lavender text-lg text-[#080981]">{icon}</div><div><h3 className="text-[12px] font-bold tracking-[-0.02em]">{title}</h3><p className="mt-1.5 text-[10px] leading-4 text-muted">{copy}</p></div></article>)}</div></div></section>
 }
 
 const benefits = [
@@ -367,9 +365,9 @@ export function TeamSection() {
 }
 
 const faqs = [
-  ['Do I need any previous coding knowledge?', 'No. The bootcamp is designed for complete beginners. You will learn how to think through a product, prompt AI well, and make sense of the code it generates.'],
-  ['What tools will we use? (Antigravity Agent, Stitch, Android Studio, Firebase, Flutter, Github)', 'We use a focused, beginner-friendly toolkit: Antigravity Agent, Stitch, Android Studio, Firebase. You will leave with a repeatable workflow, not a pile of disconnected tools.'],
-  ['Will my app actually get published to stores?', 'Yes. The final weeks are structured around production readiness, store assets, review requirements, and the submission workflow for both Apple and Google.'],
+  ['Do I need any previous coding knowledge?', 'No. The bootcamp is designed for complete beginners starting from scratch. You will learn how to architect web products, steer AI agents, and understand the code they generate.'],
+  ['What tools will we use?', 'We use a focused, beginner-friendly toolkit: Antigravity Agent, Claude, Stitch, Firebase, Git, and cloud deployment platforms. You will leave with a repeatable web development workflow, not a pile of disconnected tools.'],
+  ['Will my web app actually get deployed and published live?', 'Yes. You will deploy a live, production-grade web application with a live public URL accessible on both mobile and desktop browsers.'],
   ['Will there be 24/7 Technical Services Support?', 'You will have access to the community, recorded walkthroughs, and direct debugging support throughout the immersion so you are never left alone with a blocker.'],
 ]
 
@@ -385,20 +383,20 @@ export function CtaBanner() {
       <div className="noise relative mx-auto max-w-[1300px] overflow-hidden rounded-2xl bg-[url('/ctabanner.png')] bg-[#080981] bg-cover bg-center bg-no-repeat px-6 py-16 text-center text-white sm:px-12">
         <div className="relative">
           <h2 className="display text-[31px] leading-[.95] sm:text-[42px]">
-            Stop dreaming about your app.<br />
+            Stop dreaming about your web app.<br />
             <span className="font-sans font-black tracking-[-.06em]">Start shipping it.</span>
           </h2>
           <p className="mx-auto mt-5 max-w-md text-[11px] leading-5 text-white/75">
-            Join 378+ builders in the upcoming Chat2Build Bootcamp commencing November 15, 2026 and launch your software into real production.
+            Join 378+ builders in the upcoming Chat2Build Bootcamp commencing November 22, 2026 and launch your software into real production.
           </p>
           <button
             type="button"
             onClick={scrollToPricing}
             className="mt-6 inline-flex cursor-pointer items-center gap-2 rounded-md bg-lemon px-5 py-3 text-[11px] font-black text-[#080981] transition hover:-translate-y-0.5 shadow-md"
           >
-            Register Now
+            Register for Free →
           </button>
-          <p className="mt-5 text-[9px] text-white/60">♙ Guaranteed Technical Support until your app is live.</p>
+          <p className="mt-5 text-[9px] text-white/60">♙ Guaranteed Technical Support until your web app is live.</p>
         </div>
       </div>
     </section>
@@ -406,5 +404,5 @@ export function CtaBanner() {
 }
 
 export function Footer() {
-  return <footer className="bg-white pb-8"><div className="shell grid gap-10 border-b border-line pb-10 pt-5 sm:grid-cols-[1.5fr_1fr_1fr] sm:gap-16"><div><Logo /><p className="mt-4 max-w-xs text-[10px] leading-5 text-muted">Chat2Build helps in empowering non-programmers and domain experts to build, launch, and publish production-ready web and mobile applications with AI.</p><div className="mt-4 flex gap-3 text-[11px] text-muted"><a href="#top" aria-label="X">𝕏</a><a href="#top" aria-label="Facebook">◉</a><a href="#top" aria-label="LinkedIn">in</a><a href="#top" aria-label="Instagram">◎</a></div></div><div><h3 className="text-[10px] font-bold uppercase tracking-[.1em] text-[#080981]">Product</h3><div className="mt-4 space-y-3 text-[10px] text-muted"><a className="block hover:text-ink" href="#roadmap">Curriculum Overview</a><a className="block hover:text-ink" href="#roadmap">4-Week Roadmap</a><a className="block hover:text-ink" href="#features">Features</a><a className="block hover:text-ink" href="#faq">FAQs</a></div></div><div><h3 className="text-[10px] font-bold uppercase tracking-[.1em] text-[#080981]">Resources &amp; Legal</h3><div className="mt-4 space-y-3 text-[10px] text-muted"><a className="block hover:text-ink" href="#faq">Student FAQ</a><a className="block hover:text-ink" href="#top">Terms of Service</a><a className="block hover:text-ink" href="#top">Privacy Policy</a><a className="block hover:text-ink" href="#top">Blog</a></div></div></div><div className="shell flex flex-col justify-between gap-3 pt-6 text-[9px] text-muted sm:flex-row"><span>© 2026 Chat2Build Bootcamp. All rights reserved.</span><span>Crafted by Usman Mubarak.</span></div></footer>
+  return <footer className="bg-white pb-8"><div className="shell grid gap-10 border-b border-line pb-10 pt-5 sm:grid-cols-[1.5fr_1fr_1fr] sm:gap-16"><div><Logo /><p className="mt-4 max-w-xs text-[10px] leading-5 text-muted">Chat2Build helps in empowering non-programmers and domain experts to build, launch, and publish production-ready web applications with AI.</p><div className="mt-4 flex gap-3 text-[11px] text-muted"><a href="#top" aria-label="X">𝕏</a><a href="#top" aria-label="Facebook">◉</a><a href="#top" aria-label="LinkedIn">in</a><a href="#top" aria-label="Instagram">◎</a></div></div><div><h3 className="text-[10px] font-bold uppercase tracking-[.1em] text-[#080981]">Product</h3><div className="mt-4 space-y-3 text-[10px] text-muted"><a className="block hover:text-ink" href="#roadmap">Curriculum Overview</a><a className="block hover:text-ink" href="#roadmap">2-Week Web App Roadmap</a><a className="block hover:text-ink" href="#features">Features</a><a className="block hover:text-ink" href="#faq">FAQs</a></div></div><div><h3 className="text-[10px] font-bold uppercase tracking-[.1em] text-[#080981]">Resources &amp; Legal</h3><div className="mt-4 space-y-3 text-[10px] text-muted"><a className="block hover:text-ink" href="#faq">Student FAQ</a><a className="block hover:text-ink" href="#top">Terms of Service</a><a className="block hover:text-ink" href="#top">Privacy Policy</a><a className="block hover:text-ink" href="#top">Blog</a></div></div></div><div className="shell flex flex-col justify-between gap-3 pt-6 text-[9px] text-muted sm:flex-row"><span>© 2026 Chat2Build Bootcamp. All rights reserved.</span><span>Crafted by Usman Mubarak.</span></div></footer>
 }
