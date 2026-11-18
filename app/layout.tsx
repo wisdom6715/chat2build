@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Joan, Montserrat } from 'next/font/google'
 import './globals.css'
 import { SourceTracker } from './components/SourceTracker'
+import { Analytics } from '@vercel/analytics/next'
 
 const joan = Joan({ subsets: ['latin'], weight: '400', variable: '--font-joan' })
 const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-montserrat' })
@@ -133,6 +134,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
         />
         {children}
+        <Analytics />
       </body>
     </html>
   )
