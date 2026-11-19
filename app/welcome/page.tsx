@@ -39,6 +39,20 @@ function WelcomeContent() {
 
   useEffect(() => {
     router.prefetch('/')
+    // Trigger Meta Pixel CompleteRegistration & Lead events on confirmation
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      try {
+        ;(window as any).fbq('track', 'CompleteRegistration', {
+          content_name: 'Chat2Build Web App Bootcamp',
+          status: 'success',
+        })
+        ;(window as any).fbq('track', 'Lead', {
+          content_name: 'Chat2Build Web App Bootcamp',
+        })
+      } catch (err) {
+        // Non-critical: safe ignore
+      }
+    }
   }, [router])
 
   const assistantChatText = `Hi Chat2Build Assistant! My name is ${studentName}. I just registered for the free Chat2Build Bootcamp!`
