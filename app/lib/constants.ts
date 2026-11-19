@@ -96,5 +96,17 @@ export function extractSourceFromParams(
   if (raw && raw.trim()) {
     return normalizeSource(raw)
   }
+
+  // Automatic platform click IDs fallback (when ad platforms append their own tracking IDs)
+  if (params.get('fbclid')) {
+    return 'meta'
+  }
+  if (params.get('gclid')) {
+    return 'google'
+  }
+  if (params.get('twclid')) {
+    return 'x'
+  }
+
   return null
 }
