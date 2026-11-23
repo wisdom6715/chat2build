@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-montserrat: 'Montserrat', sans-serif;
+  --font-joan: 'Joan', serif;
+}
+
+body {
+  background-color: #fafafc;
+  color: #11172f;
+  font-family: var(--font-montserrat), sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.display-title {
+  font-family: var(--font-joan), serif;
+}
+
+.primary-button {
+  background-color: #090bc2;
+  color: #ffffff;
+  font-weight: 800;
+  border-radius: 14px;
+  padding: 12px 24px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.primary-button:hover {
+  background-color: #080981;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px -5px rgba(9, 11, 194, 0.35);
+}
+
+.lemon-button {
+  background-color: #f6dc18;
+  color: #080981;
+  font-weight: 800;
+  border-radius: 14px;
+  padding: 12px 24px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.lemon-button:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px -5px rgba(246, 220, 24, 0.45);
+}
+
+.tabular-num {
+  font-variant-numeric: tabular-nums;
+}
