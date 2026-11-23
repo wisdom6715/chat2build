@@ -1,18 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '../../../lib/firebase'
-import { collection, getDocs, query, orderBy, where, doc, getDoc } from 'firebase/firestore'
+import { collection, getDocs, query, orderBy, where } from 'firebase/firestore'
+import { getYouTubeEmbedUrl, getYouTubeThumbnailUrl } from '../../../lib/youtube'
 
 export const dynamic = 'force-dynamic'
-
-function getYouTubeEmbedUrl(url: string): string {
-  if (!url) return ''
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|live\/|watch\?v=|&v=)([^#&?]*).*/
-  const match = url.trim().match(regExp)
-  if (match && match[2].length === 11) {
-    return `https://www.youtube-nocookie.com/embed/${match[2]}`
-  }
-  return url
-}
 
 function getTodayString(): string {
   return new Date().toISOString().split('T')[0]
@@ -36,14 +27,15 @@ export async function GET(req: NextRequest) {
 
     let coursesList = coursesSnap.docs.map((d) => {
       const data = d.data()
+      const videoUrl = data.introVideoUrl || ''
       return {
         id: d.id,
         title: data.title || 'Untitled Course',
         description: data.description || '',
-        thumbnailUrl: data.thumbnailUrl || '',
+        thumbnailUrl: data.thumbnailUrl || getYouTubeThumbnailUrl(videoUrl),
         introTitle: data.introTitle || 'Orientation & Course Overview',
-        introVideoUrl: data.introVideoUrl || '',
-        introEmbedUrl: data.introEmbedUrl || getYouTubeEmbedUrl(data.introVideoUrl || ''),
+        introVideoUrl: videoUrl,
+        introEmbedUrl: data.introEmbedUrl || getYouTubeEmbedUrl(videoUrl),
         introSlideUrl: data.introSlideUrl || '',
         introDuration: data.introDuration || '15 mins',
         introNotes: data.introNotes || '',
@@ -52,17 +44,18 @@ export async function GET(req: NextRequest) {
       }
     })
 
-    // If no course exists in Firestore, provide default fallback
+    // If no course exists in Firestore, fallback
     if (coursesList.length === 0) {
+      const defaultVideoUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
       coursesList = [
         {
           id: 'default-course',
           title: 'Chat2Build: Build Your First Web App with AI',
           description: 'A 2-week intensive bootcamp teaching non-programmers how to design, build, and deploy production-ready web applications using modern AI workflows.',
-          thumbnailUrl: '',
+          thumbnailUrl: getYouTubeThumbnailUrl(defaultVideoUrl),
           introTitle: 'Orientation & Course Overview',
-          introVideoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-          introEmbedUrl: 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
+          introVideoUrl: defaultVideoUrl,
+          introEmbedUrl: getYouTubeEmbedUrl(defaultVideoUrl),
           introSlideUrl: '',
           introDuration: '15 mins',
           introNotes: 'Welcome to Chat2Build! Watch this orientation class to understand the curriculum schedule, Stitch UI setup, and cohort community.',
@@ -90,9 +83,7 @@ export async function GET(req: NextRequest) {
           todayViewCounts[target] = (todayViewCounts[target] || 0) + 1
         }
       })
-    } catch (e) {
-      // Index might be warming or empty
-    }
+    } catch (e) {}
 
     // 3. Fetch modules
     const modulesRef = collection(db, 'curriculum_modules')
@@ -120,14 +111,16 @@ export async function GET(req: NextRequest) {
       const mId = d.moduleId
       if (!mId) return
       if (!classesByModule[mId]) classesByModule[mId] = []
+      const ytUrl = d.youtubeUrl || ''
       classesByModule[mId].push({
         id: docSnap.id,
         moduleId: mId,
         title: d.title || 'Untitled Class',
         classNumber: d.classNumber ?? 1,
         order: d.order ?? 1,
-        youtubeUrl: d.youtubeUrl || '',
-        embedUrl: d.embedUrl || getYouTubeEmbedUrl(d.youtubeUrl || ''),
+        youtubeUrl: ytUrl,
+        embedUrl: d.embedUrl || getYouTubeEmbedUrl(ytUrl),
+        thumbnailUrl: getYouTubeThumbnailUrl(ytUrl),
         slideUrl: d.slideUrl || '',
         duration: d.duration || '',
         notes: d.notes || '',
@@ -142,7 +135,7 @@ export async function GET(req: NextRequest) {
     })
 
     // Filter modules for active course (or modules without courseId for the primary course)
-    const modules = modulesSnap.docs
+    const activeModules = modulesSnap.docs
       .map((docSnap) => {
         const d = docSnap.data()
         return {
@@ -158,39 +151,55 @@ export async function GET(req: NextRequest) {
       .filter((m) => {
         if (!activeCourse) return true
         if (m.courseId === activeCourse.id) return true
-        // If courseId not set on module, attach to the first course
         if (!m.courseId && (activeCourse.id === coursesList[0]?.id || activeCourse.id === 'default-course')) return true
         return false
       })
 
-    modules.sort((a, b) => a.order - b.order)
+    activeModules.sort((a, b) => a.order - b.order)
 
-    // Compute course stats for course listing
-    const coursesWithStats = coursesList.map((course) => {
-      const courseMods = modulesSnap.docs.filter((m) => {
-        const d = m.data()
-        return d.courseId === course.id || (!d.courseId && course.id === coursesList[0]?.id)
-      })
-      let totalLessons = 1 // including intro class
+    // Complete course objects with modules and classes for Course Listing page
+    const coursesWithModules = coursesList.map((course) => {
+      const courseMods = modulesSnap.docs
+        .filter((m) => {
+          const d = m.data()
+          return d.courseId === course.id || (!d.courseId && (course.id === coursesList[0]?.id || course.id === 'default-course'))
+        })
+        .map((m) => {
+          const d = m.data()
+          return {
+            id: m.id,
+            title: d.title || '',
+            weekNumber: d.weekNumber ?? 1,
+            order: d.order ?? 1,
+            description: d.description || '',
+            classes: classesByModule[m.id] || [],
+          }
+        })
+
+      courseMods.sort((a, b) => a.order - b.order)
+
+      let totalLessons = 1 // includes orientation
       courseMods.forEach((mod) => {
-        totalLessons += (classesByModule[mod.id] || []).length
+        totalLessons += (mod.classes || []).length
       })
+
       return {
         ...course,
         moduleCount: courseMods.length,
         totalLessons,
+        modules: courseMods,
         todayViews: todayViewCounts['intro'] || 0,
       }
     })
 
     return NextResponse.json({
       success: true,
-      courses: coursesWithStats,
+      courses: coursesWithModules,
       activeCourse: {
         ...activeCourse,
         todayViews: todayViewCounts['intro'] || 0,
       },
-      modules,
+      modules: activeModules,
     })
   } catch (err: any) {
     console.error('[Portal Curriculum GET Error]:', err)

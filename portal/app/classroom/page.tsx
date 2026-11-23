@@ -69,6 +69,7 @@ function ClassroomContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const courseIdParam = searchParams.get('courseId')
+  const classIdParam = searchParams.get('classId')
 
   const [student, setStudent] = useState<StudentUser | null>(null)
   const [course, setCourse] = useState<CourseItem | null>(null)
@@ -78,7 +79,7 @@ function ClassroomContent() {
   const [loading, setLoading] = useState(true)
   const [markingProgress, setMarkingProgress] = useState(false)
 
-  // Layout states
+  // Layout states (All Light / White Mode)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({})
@@ -125,8 +126,34 @@ function ClassroomContent() {
             setExpandedModules(initialExpanded)
           }
 
-          // Per requirement: Course Introduction Class comes first upon clicking the course!
-          if (activeCourse) {
+          // Check if a specific class was requested via URL ?classId=...
+          let specificLesson: ActiveLesson | null = null
+          if (classIdParam && classIdParam !== 'intro' && currData.modules) {
+            for (const m of currData.modules) {
+              const matched = (m.classes || []).find((c: ClassItem) => c.id === classIdParam)
+              if (matched) {
+                specificLesson = {
+                  id: matched.id,
+                  isIntro: false,
+                  title: matched.title,
+                  classNumber: matched.classNumber,
+                  duration: matched.duration || '',
+                  embedUrl: matched.embedUrl,
+                  youtubeUrl: matched.youtubeUrl,
+                  slideUrl: matched.slideUrl || '',
+                  notes: matched.notes || '',
+                  viewCount: matched.viewCount || 0,
+                  todayViews: matched.todayViews || 0,
+                }
+                break
+              }
+            }
+          }
+
+          if (specificLesson) {
+            setActiveLesson(specificLesson)
+          } else if (activeCourse) {
+            // Default to Course Introduction Class at the top
             setActiveLesson({
               id: `intro-${activeCourse.id}`,
               isIntro: true,
@@ -135,7 +162,9 @@ function ClassroomContent() {
               embedUrl: activeCourse.introEmbedUrl || 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
               youtubeUrl: activeCourse.introVideoUrl || '',
               slideUrl: activeCourse.introSlideUrl || '',
-              notes: activeCourse.introNotes || 'Welcome to Chat2Build! Watch this orientation class to learn about the schedule, tools, and community.',
+              notes:
+                activeCourse.introNotes ||
+                'Welcome to Chat2Build! Watch this orientation class to learn about the schedule, tools, and community.',
               viewCount: activeCourse.introViewCount || 0,
               todayViews: activeCourse.todayViews || 0,
             })
@@ -149,7 +178,7 @@ function ClassroomContent() {
     }
 
     init()
-  }, [courseIdParam, router])
+  }, [courseIdParam, classIdParam, router])
 
   // 2. Track Video View when activeLesson changes
   useEffect(() => {
@@ -178,7 +207,7 @@ function ClassroomContent() {
           })
         }
       } catch (err) {
-        // Silently handle view tracking failure
+        // Silently handle
       }
     }
 
@@ -287,10 +316,10 @@ function ClassroomContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#1c1d1f] text-white">
+      <div className="min-h-screen flex items-center justify-center bg-white text-slate-900">
         <div className="text-center space-y-3">
-          <div className="h-9 w-9 animate-spin rounded-full border-4 border-lemon border-t-transparent mx-auto" />
-          <p className="text-xs font-black uppercase tracking-wider text-slate-300">
+          <div className="h-9 w-9 animate-spin rounded-full border-4 border-[#090bc2] border-t-transparent mx-auto" />
+          <p className="text-xs font-black uppercase tracking-wider text-slate-500">
             Loading Course Classroom...
           </p>
         </div>
@@ -303,37 +332,37 @@ function ClassroomContent() {
   return (
     <div className="min-h-screen bg-[#fafafc] text-[#11172f] flex flex-col font-sans">
       {/* ======================================================== */}
-      {/* 1. TOP UDEMY-STYLE NAV BAR (#1c1d1f / Dark Theater Bar)  */}
+      {/* 1. TOP NAV BAR (FULL WHITE / LIGHT MODE)                 */}
       {/* ======================================================== */}
-      <header className="bg-[#1c1d1f] text-white h-[60px] border-b border-[#2d2f31] flex items-center justify-between px-4 sm:px-6 sticky top-0 z-40 select-none">
-        {/* Left: Brand Logo & Course Title & Back to Courses */}
+      <header className="bg-white text-slate-900 h-[64px] border-b border-[#e8e8f0] flex items-center justify-between px-4 sm:px-6 sticky top-0 z-40 select-none shadow-2xs">
+        {/* Left: Brand Logo & Course Title & Back Link */}
         <div className="flex items-center gap-3.5 min-w-0">
           <Link
             href="/courses"
             className="flex items-center gap-2 hover:opacity-85 transition"
             title="Return to Course Catalog"
           >
-            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[#090bc2] text-white font-black text-xs shadow-sm">
-              C
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#090bc2] text-white font-black text-xs shadow-xs">
+              C2B
             </span>
-            <span className="font-bold text-sm tracking-tight hidden sm:inline text-white">
+            <span className="font-black text-sm tracking-tight hidden sm:inline text-slate-900">
               Chat2Build
             </span>
           </Link>
 
-          <span className="text-[#3e4143] text-base font-light hidden sm:inline">|</span>
+          <span className="text-slate-300 text-base font-light hidden sm:inline">|</span>
 
           <Link
             href="/courses"
-            className="text-xs font-bold text-slate-400 hover:text-white transition flex items-center gap-1 hidden md:flex shrink-0"
+            className="text-xs font-bold text-slate-500 hover:text-[#090bc2] transition flex items-center gap-1 hidden md:flex shrink-0 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg"
           >
             <span>←</span>
             <span>All Courses</span>
           </Link>
 
-          <span className="text-[#3e4143] text-base font-light hidden md:inline">|</span>
+          <span className="text-slate-300 text-base font-light hidden md:inline">|</span>
 
-          <h1 className="text-xs sm:text-[13px] font-semibold text-slate-200 truncate max-w-[240px] sm:max-w-sm lg:max-w-xl">
+          <h1 className="text-xs sm:text-[13px] font-bold text-slate-800 truncate max-w-[240px] sm:max-w-sm lg:max-w-xl">
             {course?.title || 'Chat2Build — Web App Bootcamp'}
           </h1>
         </div>
@@ -341,7 +370,7 @@ function ClassroomContent() {
         {/* Right: Certificate / Progress, Share, & Profile Menu */}
         <div className="flex items-center gap-3 shrink-0">
           {/* Progress / Certificate Pill */}
-          <div className="hidden md:flex items-center gap-2 bg-[#2d2f31] px-3 py-1.5 rounded-full text-xs font-semibold text-slate-200">
+          <div className="hidden md:flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full text-xs font-semibold text-slate-700 border border-slate-200">
             <span className="text-sm">🏆</span>
             <span className="tabular-num">
               {completedCount} / {totalClassesCount} completed ({progressPercent}%)
@@ -352,9 +381,9 @@ function ClassroomContent() {
           <button
             type="button"
             onClick={handleShare}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#3e4143] hover:bg-[#2d2f31] text-xs font-bold text-slate-200 transition cursor-pointer"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-xs font-bold text-slate-700 transition cursor-pointer"
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -370,7 +399,7 @@ function ClassroomContent() {
             type="button"
             onClick={() => setSidebarOpen(!sidebarOpen)}
             title={sidebarOpen ? 'Collapse course content' : 'Open course content'}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#2d2f31] hover:bg-[#3e4143] text-xs font-bold text-slate-200 transition cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-bold text-slate-800 transition cursor-pointer"
           >
             <span>{sidebarOpen ? '✕ Close list' : '☰ Course content'}</span>
           </button>
@@ -380,13 +409,13 @@ function ClassroomContent() {
             <button
               type="button"
               onClick={() => setUserMenuOpen(!userMenuOpen)}
-              className="flex items-center justify-center h-8 w-8 rounded-full bg-[#090bc2] hover:brightness-110 text-white font-black text-xs cursor-pointer ring-2 ring-white/10"
+              className="flex items-center justify-center h-8 w-8 rounded-full bg-[#090bc2] hover:brightness-110 text-white font-black text-xs cursor-pointer ring-2 ring-slate-100 shadow-xs"
             >
               {student?.name ? student.name.charAt(0).toUpperCase() : 'S'}
             </button>
 
             {userMenuOpen && (
-              <div className="absolute right-0 top-10 w-56 rounded-xl bg-white border border-[#e8e8f0] shadow-2xl p-3 text-ink z-50 text-xs animate-in fade-in duration-100">
+              <div className="absolute right-0 top-10 w-56 rounded-xl bg-white border border-[#e8e8f0] shadow-xl p-3 text-ink z-50 text-xs animate-in fade-in duration-100">
                 <div className="pb-2 border-b border-[#e8e8f0]">
                   <p className="font-black text-sm truncate">{student?.name}</p>
                   <p className="text-[11px] text-muted truncate">{student?.email}</p>
@@ -423,21 +452,21 @@ function ClassroomContent() {
       </header>
 
       {/* ======================================================== */}
-      {/* 2. MAIN LMS WORKSPACE (LEFT PLAYER + RIGHT SIDEBAR)       */}
+      {/* 2. MAIN WORKSPACE (FULL LIGHT / WHITE MODE)               */}
       {/* ======================================================== */}
-      <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden bg-white">
         {/* ======================================================== */}
-        {/* LEFT COLUMN: THEATER VIDEO + TABS + OVERVIEW             */}
+        {/* LEFT COLUMN: PLAYER + TABS + OVERVIEW                     */}
         {/* ======================================================== */}
         <div
           className={`flex-1 flex flex-col transition-all duration-300 overflow-y-auto ${
-            sidebarOpen ? 'lg:w-[70%] xl:w-[73%]' : 'w-full'
+            sidebarOpen ? 'lg:w-[68%] xl:w-[72%]' : 'w-full'
           }`}
         >
-          {/* Cinematic Dark Stage for YouTube Embed */}
-          <div className="bg-black w-full flex justify-center items-center shadow-lg">
+          {/* Video Player Stage on Clean Backdrop */}
+          <div className="bg-slate-950 w-full flex justify-center items-center">
             <div className="w-full max-w-[1400px]">
-              <div className="relative aspect-video w-full bg-black">
+              <div className="relative aspect-video w-full bg-slate-950">
                 {activeLesson?.embedUrl ? (
                   <iframe
                     key={activeLesson.id}
@@ -456,7 +485,7 @@ function ClassroomContent() {
             </div>
           </div>
 
-          {/* Sub-Navigation Tabs Bar (Udemy Style) */}
+          {/* Sub-Navigation Tabs Bar */}
           <div className="bg-white border-b border-[#e8e8f0] px-4 sm:px-8">
             <div className="flex items-center gap-6 overflow-x-auto text-[13px] font-bold">
               <button
@@ -464,8 +493,8 @@ function ClassroomContent() {
                 onClick={() => setActiveTab('overview')}
                 className={`py-3.5 border-b-2 transition cursor-pointer shrink-0 ${
                   activeTab === 'overview'
-                    ? 'border-[#11172f] text-[#11172f]'
-                    : 'border-transparent text-muted hover:text-ink'
+                    ? 'border-[#090bc2] text-[#090bc2]'
+                    : 'border-transparent text-slate-500 hover:text-slate-900'
                 }`}
               >
                 Overview
@@ -476,13 +505,13 @@ function ClassroomContent() {
                 onClick={() => setActiveTab('slides')}
                 className={`py-3.5 border-b-2 transition cursor-pointer shrink-0 flex items-center gap-1.5 ${
                   activeTab === 'slides'
-                    ? 'border-[#11172f] text-[#11172f]'
-                    : 'border-transparent text-muted hover:text-ink'
+                    ? 'border-[#090bc2] text-[#090bc2]'
+                    : 'border-transparent text-slate-500 hover:text-slate-900'
                 }`}
               >
                 <span>Slides &amp; Resources</span>
                 {activeLesson?.slideUrl && (
-                  <span className="h-2 w-2 rounded-full bg-lemon animate-pulse" />
+                  <span className="h-2 w-2 rounded-full bg-[#090bc2] animate-pulse" />
                 )}
               </button>
 
@@ -491,8 +520,8 @@ function ClassroomContent() {
                 onClick={() => setActiveTab('qa')}
                 className={`py-3.5 border-b-2 transition cursor-pointer shrink-0 ${
                   activeTab === 'qa'
-                    ? 'border-[#11172f] text-[#11172f]'
-                    : 'border-transparent text-muted hover:text-ink'
+                    ? 'border-[#090bc2] text-[#090bc2]'
+                    : 'border-transparent text-slate-500 hover:text-slate-900'
                 }`}
               >
                 Q&amp;A &amp; WhatsApp Mentors
@@ -503,8 +532,8 @@ function ClassroomContent() {
                 onClick={() => setActiveTab('notes')}
                 className={`py-3.5 border-b-2 transition cursor-pointer shrink-0 ${
                   activeTab === 'notes'
-                    ? 'border-[#11172f] text-[#11172f]'
-                    : 'border-transparent text-muted hover:text-ink'
+                    ? 'border-[#090bc2] text-[#090bc2]'
+                    : 'border-transparent text-slate-500 hover:text-slate-900'
                 }`}
               >
                 Notes
@@ -515,8 +544,8 @@ function ClassroomContent() {
                 onClick={() => setActiveTab('announcements')}
                 className={`py-3.5 border-b-2 transition cursor-pointer shrink-0 ${
                   activeTab === 'announcements'
-                    ? 'border-[#11172f] text-[#11172f]'
-                    : 'border-transparent text-muted hover:text-ink'
+                    ? 'border-[#090bc2] text-[#090bc2]'
+                    : 'border-transparent text-slate-500 hover:text-slate-900'
                 }`}
               >
                 Announcements
@@ -526,7 +555,7 @@ function ClassroomContent() {
 
           {/* TAB 1: OVERVIEW CONTENT */}
           {activeTab === 'overview' && (
-            <div className="p-4 sm:p-8 max-w-4xl space-y-6">
+            <div className="p-4 sm:p-8 max-w-4xl space-y-6 bg-white">
               {activeLesson ? (
                 <>
                   {/* Class Headline & TOP ROW: Title on Left, Slide Button + Completion Button OPPOSITE */}
@@ -537,12 +566,12 @@ function ClassroomContent() {
                           ? 'Course Introduction Class'
                           : `Class ${activeLesson.classNumber || 1}`}
                       </span>
-                      <h2 className="text-2xl sm:text-3xl font-black text-ink mt-2 leading-tight">
+                      <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-2 leading-tight">
                         {activeLesson.title}
                       </h2>
                     </div>
 
-                    {/* OPPOSITE THE TOPIC: Vivid Presentation Slide Download Button & Completion Button */}
+                    {/* OPPOSITE THE TOPIC: Vivid Slide Download Button & Completion Button */}
                     <div className="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap">
                       {/* VIVID SLIDE DOWNLOAD BUTTON OPPOSITE TOPIC */}
                       {activeLesson.slideUrl ? (
@@ -578,32 +607,32 @@ function ClassroomContent() {
                   </div>
 
                   {/* Course / Cohort Ratings & Meta Indicators */}
-                  {/* NOTE: Replaced 'November 2026 Immersion' with LIVE VIDEO VIEWER COUNTER per prompt! */}
-                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-bold text-muted border-b border-[#e8e8f0] pb-5">
+                  {/* VIEWER METRICS FORMAT: 👁️ {count} viewers • {today} today */}
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-bold text-slate-500 border-b border-[#e8e8f0] pb-5">
                     <span className="flex items-center gap-1 text-[#b4690e]">
                       <span className="text-sm font-black">5.0</span>
                       <span>★★★★★</span>
-                      <span className="text-muted font-normal">(Cohort 1)</span>
+                      <span className="text-slate-400 font-normal">(Cohort 1)</span>
                     </span>
 
-                    <span className="flex items-center gap-1 text-ink">
+                    <span className="flex items-center gap-1 text-slate-700">
                       <span>👥</span>
                       <span>Active Builders</span>
                     </span>
 
                     {activeLesson.duration && (
-                      <span className="flex items-center gap-1 text-ink">
+                      <span className="flex items-center gap-1 text-slate-700">
                         <span>⏱️</span>
                         <span>{activeLesson.duration}</span>
                       </span>
                     )}
 
-                    {/* LIVE VIEWER COUNTER (Replaces November 2026 Immersion) */}
-                    <span className="flex items-center gap-1.5 bg-blue-50/80 text-[#090bc2] px-3 py-1 rounded-lg border border-[#090bc2]/15 font-black">
+                    {/* LIVE VIEWER COUNTER: 👁️ 0 viewers • 0 today */}
+                    <span className="flex items-center gap-1.5 bg-blue-50 text-[#090bc2] px-3 py-1 rounded-lg border border-[#090bc2]/20 font-black">
                       <span>👁️</span>
                       <span className="tabular-num">{activeLesson.viewCount} viewers</span>
-                      <span className="text-[#090bc2]/40">•</span>
-                      <span className="tabular-num text-emerald-700 font-extrabold">
+                      <span className="text-slate-300">•</span>
+                      <span className="tabular-num text-emerald-700 font-black">
                         {activeLesson.todayViews} today
                       </span>
                     </span>
@@ -611,7 +640,7 @@ function ClassroomContent() {
 
                   {/* About This Class & Lesson Notes */}
                   <div className="space-y-3 pt-2">
-                    <h3 className="text-base font-black text-ink">About this class</h3>
+                    <h3 className="text-base font-black text-slate-900">About this class</h3>
                     <p className="text-sm text-slate-600 leading-relaxed">
                       {activeLesson.notes ||
                         'In this session, you learn step-by-step how to conceptualize, design, and deploy full-stack web applications using cutting-edge AI workflows. Watch the video above and follow along in your development environment!'}
@@ -619,7 +648,7 @@ function ClassroomContent() {
                   </div>
                 </>
               ) : (
-                <div className="py-12 text-center text-muted text-sm">
+                <div className="py-12 text-center text-slate-400 text-sm">
                   Please select a class from the course content sidebar to begin learning.
                 </div>
               )}
@@ -628,8 +657,8 @@ function ClassroomContent() {
 
           {/* TAB 2: SLIDES & RESOURCES TAB */}
           {activeTab === 'slides' && (
-            <div className="p-4 sm:p-8 max-w-4xl space-y-6">
-              <h3 className="text-base font-black text-ink">Lecture Slides &amp; Resources</h3>
+            <div className="p-4 sm:p-8 max-w-4xl space-y-6 bg-white">
+              <h3 className="text-base font-black text-slate-900">Lecture Slides &amp; Resources</h3>
               {activeLesson?.slideUrl ? (
                 <div className="p-6 rounded-2xl bg-white border border-[#e8e8f0] space-y-4 shadow-xs">
                   <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -638,8 +667,8 @@ function ClassroomContent() {
                         📄
                       </span>
                       <div>
-                        <h4 className="font-bold text-sm text-ink">{activeLesson.title} — Slide Deck</h4>
-                        <p className="text-xs text-muted">Official lecture slides and architecture blueprints</p>
+                        <h4 className="font-bold text-sm text-slate-900">{activeLesson.title} — Slide Deck</h4>
+                        <p className="text-xs text-slate-500">Official lecture slides and architecture blueprints</p>
                       </div>
                     </div>
 
@@ -653,7 +682,6 @@ function ClassroomContent() {
                     </a>
                   </div>
 
-                  {/* Embedded PDF iframe viewer if browser supports */}
                   <div className="aspect-video w-full rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
                     <iframe
                       src={activeLesson.slideUrl}
@@ -663,9 +691,9 @@ function ClassroomContent() {
                   </div>
                 </div>
               ) : (
-                <div className="p-8 rounded-2xl bg-white border border-[#e8e8f0] text-center space-y-2">
-                  <p className="text-sm font-bold text-ink">No slides attached to this class yet.</p>
-                  <p className="text-xs text-muted">Check back soon or ask in the WhatsApp group.</p>
+                <div className="p-8 rounded-2xl bg-slate-50 border border-[#e8e8f0] text-center space-y-2">
+                  <p className="text-sm font-bold text-slate-800">No slides attached to this class yet.</p>
+                  <p className="text-xs text-slate-500">Check back soon or ask in the WhatsApp group.</p>
                 </div>
               )}
             </div>
@@ -673,14 +701,14 @@ function ClassroomContent() {
 
           {/* TAB 3: Q&A & WHATSAPP MENTORS */}
           {activeTab === 'qa' && (
-            <div className="p-4 sm:p-8 max-w-4xl space-y-6">
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-50 via-white to-blue-50 border border-emerald-200 space-y-4">
+            <div className="p-4 sm:p-8 max-w-4xl space-y-6 bg-white">
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-50 via-white to-blue-50 border border-emerald-200 space-y-4 shadow-xs">
                 <div className="flex items-center gap-3">
                   <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-600 text-white text-2xl">
                     💬
                   </span>
                   <div>
-                    <h3 className="font-black text-lg text-ink">Official WhatsApp Cohort Group</h3>
+                    <h3 className="font-black text-lg text-slate-900">Official WhatsApp Cohort Group</h3>
                     <p className="text-xs text-slate-600">
                       Connect with mentors, ask technical questions, and troubleshoot alongside other builders.
                     </p>
@@ -691,7 +719,7 @@ function ClassroomContent() {
                     href="https://chat.whatsapp.com/JX9whdzwMAdG1NhD5M5XvS?s=cl&p=a&mlu=4&ilr=4"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs transition shadow-sm"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs transition shadow-xs"
                   >
                     <span>Join WhatsApp Community</span>
                     <span>↗</span>
@@ -703,16 +731,16 @@ function ClassroomContent() {
 
           {/* TAB 4: NOTES */}
           {activeTab === 'notes' && (
-            <div className="p-4 sm:p-8 max-w-4xl space-y-6">
-              <h3 className="text-base font-black text-ink">Personal Class Notes</h3>
-              <div className="bg-white rounded-2xl border border-[#e8e8f0] p-6 space-y-3">
+            <div className="p-4 sm:p-8 max-w-4xl space-y-6 bg-white">
+              <h3 className="text-base font-black text-slate-900">Personal Class Notes</h3>
+              <div className="bg-slate-50 rounded-2xl border border-[#e8e8f0] p-6 space-y-3">
                 <p className="text-xs text-slate-500">
                   Take notes during this video class. Notes are kept local to your learning environment.
                 </p>
                 <textarea
                   rows={8}
                   placeholder="Type your notes, shortcuts, and ideas here..."
-                  className="w-full p-4 rounded-xl border border-slate-200 text-xs focus:border-[#090bc2] focus:outline-hidden"
+                  className="w-full p-4 rounded-xl border border-slate-200 text-xs focus:border-[#090bc2] focus:outline-hidden bg-white"
                 />
               </div>
             </div>
@@ -720,12 +748,12 @@ function ClassroomContent() {
 
           {/* TAB 5: ANNOUNCEMENTS */}
           {activeTab === 'announcements' && (
-            <div className="p-4 sm:p-8 max-w-4xl space-y-6">
-              <h3 className="text-base font-black text-ink">Cohort Announcements</h3>
-              <div className="bg-white rounded-2xl border border-[#e8e8f0] p-6 space-y-2">
+            <div className="p-4 sm:p-8 max-w-4xl space-y-6 bg-white">
+              <h3 className="text-base font-black text-slate-900">Cohort Announcements</h3>
+              <div className="bg-slate-50 rounded-2xl border border-[#e8e8f0] p-6 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black uppercase text-[#090bc2]">Welcome to Chat2Build</span>
-                  <span className="text-[11px] text-muted">Pinned Announcement</span>
+                  <span className="text-[11px] text-slate-400">Pinned Announcement</span>
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed pt-1">
                   Welcome to the Chat2Build learning platform! Start with the Course Introduction class above to get familiar with our building approach. Live office hours and mentor review sessions are announced in the WhatsApp community.
@@ -736,22 +764,22 @@ function ClassroomContent() {
         </div>
 
         {/* ======================================================== */}
-        {/* RIGHT COLUMN: UDEMY-STYLE COURSE CONTENT SIDEBAR          */}
+        {/* RIGHT COLUMN: FULL WHITE / LIGHT MODE SIDEBAR             */}
         {/* ======================================================== */}
         {sidebarOpen && (
-          <aside className="w-full lg:w-[30%] xl:w-[27%] bg-[#1c1d1f] border-t lg:border-t-0 lg:border-l border-[#2d2f31] flex flex-col shrink-0 text-white max-h-[500px] lg:max-h-none overflow-y-auto">
-            {/* Sidebar Header */}
-            <div className="p-4 border-b border-[#2d2f31] flex items-center justify-between sticky top-0 bg-[#1c1d1f] z-10">
+          <aside className="w-full lg:w-[32%] xl:w-[28%] bg-white border-t lg:border-t-0 lg:border-l border-[#e8e8f0] flex flex-col shrink-0 text-slate-900 max-h-[500px] lg:max-h-none overflow-y-auto">
+            {/* Sidebar Header (White Mode) */}
+            <div className="p-4 border-b border-[#e8e8f0] flex items-center justify-between sticky top-0 bg-white z-10 shadow-2xs">
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-sm tracking-tight text-white">Course content</h3>
-                <span className="text-xs font-semibold text-slate-400">
+                <h3 className="font-bold text-sm tracking-tight text-slate-900">Course content</h3>
+                <span className="text-xs font-semibold text-slate-500">
                   ({completedCount}/{totalClassesCount})
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => setSidebarOpen(false)}
-                className="text-slate-400 hover:text-white font-bold text-sm p-1 rounded-md hover:bg-[#2d2f31] cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 font-bold text-sm p-1 rounded-md hover:bg-slate-100 cursor-pointer"
                 title="Hide course content"
               >
                 ✕
@@ -762,14 +790,14 @@ function ClassroomContent() {
             {/* 0. COURSE INTRODUCTION CLASS (AT VERY TOP BEFORE WEEKS) */}
             {/* ---------------------------------------------------- */}
             {course && (
-              <div className="border-b border-[#3e4143]/60 bg-[#17181a]">
+              <div className="border-b border-[#e8e8f0] bg-slate-50/80">
                 <button
                   type="button"
                   onClick={handleSelectIntro}
                   className={`w-full text-left p-3.5 transition flex items-start gap-3 cursor-pointer ${
                     activeLesson?.isIntro
-                      ? 'bg-[#090bc2]/25 border-l-4 border-lemon'
-                      : 'hover:bg-[#2d2f31]'
+                      ? 'bg-blue-50/80 border-l-4 border-[#090bc2]'
+                      : 'hover:bg-slate-100'
                   }`}
                 >
                   {/* Completion Checkbox for Intro */}
@@ -782,7 +810,7 @@ function ClassroomContent() {
                       className={`h-4 w-4 rounded-sm border flex items-center justify-center text-[10px] transition ${
                         completedClasses.includes(`intro-${course.id}`)
                           ? 'bg-[#090bc2] border-[#090bc2] text-white'
-                          : 'border-slate-500 hover:border-slate-300'
+                          : 'border-slate-400 bg-white hover:border-slate-600'
                       }`}
                     >
                       {completedClasses.includes(`intro-${course.id}`) && '✓'}
@@ -794,15 +822,15 @@ function ClassroomContent() {
                       <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-lemon text-[#080981]">
                         Course Intro
                       </span>
-                      <span className="text-xs font-bold text-slate-200 truncate">
+                      <span className="text-xs font-bold text-slate-900 truncate">
                         {course.introTitle || 'Orientation & Course Overview'}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-3 text-[11px] text-slate-400 mt-1">
+                    <div className="flex items-center gap-3 text-[11px] text-slate-500 mt-1">
                       <span>▶ {course.introDuration || '15 mins'}</span>
                       {course.introSlideUrl && (
-                        <span className="text-blue-300 font-bold">• 📄 Slides</span>
+                        <span className="text-[#090bc2] font-bold">• 📄 Slides</span>
                       )}
                     </div>
                   </div>
@@ -813,7 +841,7 @@ function ClassroomContent() {
             {/* ---------------------------------------------------- */}
             {/* 1. SECTIONS ACCORDION (WEEK 1, WEEK 2, etc.)          */}
             {/* ---------------------------------------------------- */}
-            <div className="divide-y divide-[#2d2f31] flex-1">
+            <div className="divide-y divide-[#e8e8f0] flex-1 bg-white">
               {modules.map((mod, modIdx) => {
                 const isExpanded = expandedModules[mod.id] ?? true
                 const modClasses = mod.classes || []
@@ -822,32 +850,32 @@ function ClassroomContent() {
                 ).length
 
                 return (
-                  <div key={mod.id} className="bg-[#1c1d1f]">
-                    {/* Module Accordion Header */}
+                  <div key={mod.id} className="bg-white">
+                    {/* Module Accordion Header (Light Mode) */}
                     <button
                       type="button"
                       onClick={() => toggleModule(mod.id)}
-                      className="w-full text-left p-4 hover:bg-[#25272a] transition flex items-start justify-between gap-3 cursor-pointer select-none"
+                      className="w-full text-left p-3.5 hover:bg-slate-50 bg-slate-50/50 transition flex items-start justify-between gap-3 cursor-pointer select-none border-b border-slate-100"
                     >
                       <div className="space-y-0.5 min-w-0">
-                        <h4 className="text-xs font-bold text-slate-100 leading-snug">
+                        <h4 className="text-xs font-bold text-slate-900 leading-snug">
                           Section {modIdx + 1}: Week {mod.weekNumber} - {mod.title}
                         </h4>
-                        <p className="text-[11px] text-slate-400 tabular-num">
+                        <p className="text-[11px] text-slate-500 tabular-num">
                           {modCompleted} / {modClasses.length} completed
                         </p>
                       </div>
 
-                      <span className="text-xs text-slate-400 shrink-0 mt-0.5">
+                      <span className="text-xs text-slate-400 shrink-0 mt-0.5 font-bold">
                         {isExpanded ? '▲' : '▼'}
                       </span>
                     </button>
 
-                    {/* Classes inside Section */}
+                    {/* Classes inside Section (Light Mode) */}
                     {isExpanded && (
-                      <div className="divide-y divide-[#282a2d] bg-[#141517]">
+                      <div className="divide-y divide-slate-100 bg-white">
                         {modClasses.length === 0 ? (
-                          <div className="p-4 text-xs text-slate-500 italic">
+                          <div className="p-4 text-xs text-slate-400 italic">
                             No classes published in this section yet.
                           </div>
                         ) : (
@@ -863,8 +891,8 @@ function ClassroomContent() {
                                 onClick={() => handleSelectClass(cls)}
                                 className={`w-full text-left p-3.5 transition flex items-start gap-3 cursor-pointer ${
                                   isCurrentActive
-                                    ? 'bg-[#090bc2]/20 border-l-4 border-[#090bc2]'
-                                    : 'hover:bg-[#1f2124]'
+                                    ? 'bg-blue-50/70 border-l-4 border-[#090bc2]'
+                                    : 'hover:bg-slate-50'
                                 }`}
                               >
                                 {/* Checkbox for class completion */}
@@ -877,7 +905,7 @@ function ClassroomContent() {
                                     className={`h-4 w-4 rounded-sm border flex items-center justify-center text-[10px] transition ${
                                       isDone
                                         ? 'bg-[#090bc2] border-[#090bc2] text-white'
-                                        : 'border-slate-500 hover:border-slate-300'
+                                        : 'border-slate-300 bg-white hover:border-slate-500'
                                     }`}
                                   >
                                     {isDone && '✓'}
@@ -889,17 +917,17 @@ function ClassroomContent() {
                                   <p
                                     className={`text-xs font-semibold leading-snug truncate ${
                                       isCurrentActive
-                                        ? 'text-white font-black'
-                                        : 'text-slate-300'
+                                        ? 'text-[#090bc2] font-black'
+                                        : 'text-slate-800'
                                     }`}
                                   >
                                     {cls.classNumber}. {cls.title}
                                   </p>
 
-                                  <div className="flex items-center gap-3 text-[11px] text-slate-400 mt-1">
+                                  <div className="flex items-center gap-3 text-[11px] text-slate-500 mt-1">
                                     {cls.duration && <span>▶ {cls.duration}</span>}
                                     {cls.slideUrl && (
-                                      <span className="text-blue-300 font-bold">• 📄 Slides</span>
+                                      <span className="text-[#090bc2] font-bold">• 📄 Slides</span>
                                     )}
                                   </div>
                                 </div>
@@ -924,8 +952,8 @@ export default function StudentClassroomPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#1c1d1f] text-white">
-          <div className="h-9 w-9 animate-spin rounded-full border-4 border-lemon border-t-transparent" />
+        <div className="min-h-screen flex items-center justify-center bg-white text-slate-900">
+          <div className="h-9 w-9 animate-spin rounded-full border-4 border-[#090bc2] border-t-transparent" />
         </div>
       }
     >

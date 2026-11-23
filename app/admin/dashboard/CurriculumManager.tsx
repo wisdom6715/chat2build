@@ -573,9 +573,9 @@ export function CurriculumManager() {
                 </div>
               </div>
               <div className="bg-white px-3 py-2 rounded-lg border border-slate-200 text-center">
-                <div className="text-[10px] font-bold text-slate-500 uppercase">All-time Views</div>
-                <div className="text-base font-black text-[#090bc2] tabular-num">
-                  👁️ {totalCourseViews}
+                <div className="text-[10px] font-bold text-slate-500 uppercase">Viewers</div>
+                <div className="text-sm font-black text-[#090bc2] tabular-num">
+                  👁️ {totalCourseViews} viewers • {currentCourse?.todayViews || 0} today
                 </div>
               </div>
             </div>
@@ -614,7 +614,7 @@ export function CurriculumManager() {
               {/* View Metrics & Actions for Intro Class */}
               <div className="flex items-center gap-2 shrink-0">
                 <div className="bg-white px-3 py-1.5 rounded-lg border border-indigo-100 text-xs font-bold text-slate-700 flex items-center gap-2 shadow-2xs">
-                  <span>👁️ {currentCourse.introViewCount || 0} views</span>
+                  <span>👁️ {currentCourse.introViewCount || 0} viewers</span>
                   <span className="text-slate-300">•</span>
                   <span className="text-indigo-600 font-extrabold">
                     {currentCourse.todayViews || 0} today
@@ -797,12 +797,12 @@ export function CurriculumManager() {
 
                       {/* Daily Watch Metrics Badge */}
                       <div className="flex items-center gap-2 bg-slate-50 px-3 py-1 rounded-lg border border-slate-200/80 text-xs font-bold text-slate-700">
-                        <span title="Total viewers all-time">
-                          👁️ {cls.viewCount || 0} views
+                        <span>
+                          👁️ {cls.viewCount || 0} viewers
                         </span>
                         <span className="text-slate-300">•</span>
-                        <span className="text-[#090bc2] font-black" title="People who watched today">
-                          📅 {cls.todayViews || 0} today
+                        <span className="text-[#090bc2] font-black">
+                          {cls.todayViews || 0} today
                         </span>
                       </div>
                     </div>
