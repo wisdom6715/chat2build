@@ -167,9 +167,6 @@ function RegistrationContent() {
           <div className="mb-8 text-center sm:text-left">
             <div className="flex flex-wrap items-center gap-2.5 justify-center sm:justify-start">
               <span className="yellow-label">Bootcamp Enrollment</span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#090BC2]/10 border border-[#090BC2]/20 px-3 py-0.5 text-[11px] font-bold text-[#090BC2]">
-                <span>Commencement Date: November 22, 2026</span>
-              </span>
             </div>
             <h1 className="display mt-3 text-[30px] sm:text-[40px] font-black leading-tight text-ink">
               Register for Chat2Build Bootcamp

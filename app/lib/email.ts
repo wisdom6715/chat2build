@@ -126,8 +126,6 @@ NEXT STEP: JOIN OUR OFFICIAL WHATSAPP COMMUNITY
 Please join our official WhatsApp group right away to get access to all class schedules, live session links, assignments, and mentor support:
 ${communityUrl}
 
-Commencement Date: November 22, 2026
-
 If you need any help, message our Virtual Assistant on WhatsApp at ${ASSISTANT_PHONE} or reply to this email.
 
 See you in class!

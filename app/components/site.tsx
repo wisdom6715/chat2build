@@ -124,9 +124,9 @@ export function Hero() {
     <section className="relative overflow-hidden bg-white pb-16 pt-36 sm:pb-24 sm:pt-44">
       <div className="shell text-center">
         <div className="flex items-center justify-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#090BC2]/10 border border-[#090BC2]/25 px-3.5 py-1 text-[12px] font-bold text-[#090BC2]">
+          {/* <span className="inline-flex items-center gap-1.5 rounded-full bg-[#090BC2]/10 border border-[#090BC2]/25 px-3.5 py-1 text-[12px] font-bold text-[#090BC2]">
             <span>Commences November 22, 2026</span>
-          </span>
+          </span> */}
         </div>
         <h1 className="mx-auto mt-5 md:max-w-3xl text-[30px] font-semibold leading-[1.07] tracking-[-0.055em] text-[#090BC2] sm:text-[30px]">YOUR WEB APP. <span>BUILT WITH</span><span className='bg-lemon p-1 italic '>AI</span> </h1>
         <p className="display mx-auto mt-4 max-w-3xl text-[25px] leading-[1.08] text-ink sm:text-[35px]">From idea to a live, production Web App without learning to code.</p>

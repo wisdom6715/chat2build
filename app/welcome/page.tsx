@@ -105,10 +105,10 @@ function WelcomeContent() {
             ! You have taken the decisive step to build and publish real web applications using
             cutting-edge AI tools. Your seat in the upcoming cohort is officially reserved.
           </p>
-          <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-lemon/50 border border-lemon px-4 py-1.5 text-[12px] font-bold text-[#080981]">
+          {/* <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-lemon/50 border border-lemon px-4 py-1.5 text-[12px] font-bold text-[#080981]">
             <span>🗓️</span>
             <span>Bootcamp Commences: November 22, 2026</span>
-          </div>
+          </div> */}
         </div>
 
         {/* PRIMARY ACTION: Join WhatsApp Community Card */}
