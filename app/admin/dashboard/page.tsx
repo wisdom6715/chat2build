@@ -6,6 +6,7 @@ import { signOut } from 'firebase/auth'
 import { auth } from '../../lib/firebase'
 import { getAdminSession, clearAdminSession, AdminSession } from '../../lib/adminAuth'
 import { normalizeSource } from '../../lib/constants'
+import { CurriculumManager } from './CurriculumManager'
 
 interface StudentRegistration {
   id: string
@@ -111,6 +112,7 @@ export default function AdminDashboardPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterIncluded, setFilterIncluded] = useState<'all' | 'included' | 'pending'>('all')
   const [filterSource, setFilterSource] = useState<'all' | 'meta' | 'google' | 'x' | 'direct'>('all')
+  const [activeTab, setActiveTab] = useState<'admissions' | 'curriculum'>('admissions')
 
   // Notification / Feedback banner
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
@@ -560,8 +562,53 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        {/* Section Navigation Tabs */}
+        <div className="flex flex-wrap items-center gap-2 mb-6 border-b border-line pb-3">
+          <button
+            type="button"
+            onClick={() => setActiveTab('admissions')}
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-xs transition cursor-pointer ${
+              activeTab === 'admissions'
+                ? 'bg-[#090BC2] text-white shadow-xs'
+                : 'bg-white text-muted hover:text-ink border border-line'
+            }`}
+          >
+            <span>👥 Student Admissions &amp; Traffic</span>
+            <span
+              className={`px-1.5 py-0.5 rounded-md text-[10px] ${
+                activeTab === 'admissions' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'
+              }`}
+            >
+              {registrations.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('curriculum')}
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-xs transition cursor-pointer ${
+              activeTab === 'curriculum'
+                ? 'bg-[#090BC2] text-white shadow-xs'
+                : 'bg-white text-muted hover:text-ink border border-line'
+            }`}
+          >
+            <span>📚 Course Curriculum &amp; Videos (app.chat2build.pro)</span>
+            <span
+              className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${
+                activeTab === 'curriculum' ? 'bg-lemon text-[#080981]' : 'bg-lemon/60 text-[#080981]'
+              }`}
+            >
+              Week 1 &amp; 2
+            </span>
+          </button>
+        </div>
+
+        {activeTab === 'curriculum' ? (
+          <CurriculumManager />
+        ) : (
+          <>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="soft-card p-4 sm:p-5 border border-line bg-white shadow-xs">
             <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-muted">
               Total Registrations
@@ -1400,7 +1447,9 @@ export default function AdminDashboardPage() {
             </>
           )}
         </div>
-      </main>
+      </>
+    )}
+  </main>
 
       {/* Footer */}
       <footer className="border-t border-line bg-white py-4">
