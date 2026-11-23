@@ -256,9 +256,11 @@ export default function StudentLoginPage() {
       <header className="border-b border-[#e8e8f0] bg-white/95 backdrop-blur sticky top-0 z-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-[72px] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#090bc2] text-white font-black text-sm shadow-xs">
-              C
-            </span>
+            <img
+              src="/logo.jpg"
+              alt="Chat2Build"
+              className="h-8 w-8 rounded-lg object-cover shadow-xs"
+            />
             <div className="flex items-baseline gap-1.5">
               <span className="font-black text-base tracking-tight text-ink">Chat2Build</span>
             </div>

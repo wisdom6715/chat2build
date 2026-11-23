@@ -88,9 +88,11 @@ export default function StudentCoursesPage() {
       <header className="h-16 bg-white border-b border-[#e8e8f0] px-4 sm:px-10 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-3">
           <Link href="/courses" className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#090bc2] text-white font-black text-sm shadow-xs">
-              C2B
-            </div>
+            <img
+              src="/logo.jpg"
+              alt="Chat2Build"
+              className="h-9 w-9 rounded-xl object-cover shadow-xs"
+            />
             <span className="text-base font-black tracking-tight text-slate-900 hidden sm:inline">
               Chat2Build <span className="text-[#090bc2]">LMS</span>
             </span>
@@ -178,73 +180,7 @@ export default function StudentCoursesPage() {
         </div>
       </section>
 
-      {/* 3. "LET'S START LEARNING" (RESUME LEARNING ROW) */}
-      <section className="bg-white py-8 px-4 sm:px-10 border-b border-[#e8e8f0]">
-        <div className="max-w-6xl mx-auto space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-              Let&apos;s start learning
-            </h2>
-            <span className="text-xs font-bold text-[#6b21a8] hover:underline cursor-pointer">
-              My learning
-            </span>
-          </div>
-
-          {loading ? (
-            <div className="py-8 text-center text-xs text-slate-400">Loading your courses...</div>
-          ) : courses.length === 0 ? (
-            <div className="py-8 text-center text-xs text-slate-400">No courses available.</div>
-          ) : (
-            <div className="flex items-stretch gap-4 overflow-x-auto pb-2">
-              {courses.map((course) => {
-                const thumbnailSrc = course.thumbnailUrl || '/images/web-dev-bootcamp-ai.jpg'
-
-                return (
-                  <Link
-                    key={course.id}
-                    href={`/classroom?courseId=${course.id}`}
-                    className="flex shrink-0 w-[340px] sm:w-[380px] h-[105px] border border-slate-200 bg-white hover:border-slate-300 hover:shadow-xs transition group cursor-pointer overflow-hidden rounded-xs"
-                  >
-                    {/* Left Course Cover with Play Button */}
-                    <div className="w-[120px] h-full shrink-0 relative bg-slate-100 border-r border-slate-200 flex items-center justify-center overflow-hidden">
-                      <img
-                        src={thumbnailSrc}
-                        alt={course.title}
-                        onError={(e) => {
-                          ;(e.target as HTMLImageElement).src = '/web-dev-bootcamp-ai.jpg'
-                        }}
-                        className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-300"
-                      />
-                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                        <div className="h-8 w-8 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-md group-hover:scale-110 transition">
-                          <span className="text-xs ml-0.5 font-black">▶</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right Course Details */}
-                    <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
-                      <div className="space-y-0.5">
-                        <p className="text-[11px] text-slate-500 font-semibold truncate">
-                          {course.title}
-                        </p>
-                        <h3 className="text-xs font-bold text-slate-900 leading-snug line-clamp-2 group-hover:text-[#090bc2] transition">
-                          {course.introTitle || 'Orientation & Course Overview'}
-                        </h3>
-                      </div>
-                      <div className="text-[11px] text-slate-500 font-medium">
-                        Lecture • {course.introDuration || '15m'}
-                      </div>
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* 4. CLEAN COURSE CATALOG (JUST LIST COURSES — NO NESTED ACCORDIONS!) */}
+      {/* 3. CLEAN COURSE CATALOG (MAIN COURSE COMPONENT) */}
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-10 py-10 space-y-6 bg-white">
         <div>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
@@ -323,9 +259,15 @@ export default function StudentCoursesPage() {
         )}
       </main>
 
-      {/* 5. FOOTER */}
-      <footer className="bg-white border-t border-[#e8e8f0] py-6 px-4 text-center text-xs text-slate-400">
-        <p>© 2026 Chat2Build LMS Portal.</p>
+      {/* 4. FOOTER WITH LOGO */}
+      <footer className="bg-white border-t border-[#e8e8f0] py-8 px-4 text-xs text-slate-500">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <img src="/logo.jpg" alt="Chat2Build" className="h-6 w-6 rounded-md object-cover shadow-2xs" />
+            <span className="font-bold text-slate-800">Chat2Build LMS Portal</span>
+          </div>
+          <p>© 2026 Chat2Build. All rights reserved.</p>
+        </div>
       </footer>
     </div>
   )

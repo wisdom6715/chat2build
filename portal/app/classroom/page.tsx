@@ -352,9 +352,11 @@ function ClassroomContent() {
             className="flex items-center gap-2 hover:opacity-85 transition"
             title="Return to Course Catalog"
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#090bc2] text-white font-black text-xs shadow-xs">
-              C2B
-            </span>
+            <img
+              src="/logo.jpg"
+              alt="Chat2Build"
+              className="h-8 w-8 rounded-lg object-cover shadow-xs"
+            />
             <span className="font-black text-sm tracking-tight hidden sm:inline text-slate-900">
               Chat2Build
             </span>
