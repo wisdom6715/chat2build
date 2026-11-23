@@ -203,11 +203,19 @@ export default function StudentCoursesPage() {
                   className="flex shrink-0 w-[340px] sm:w-[380px] h-[105px] border border-slate-200 bg-white hover:border-slate-300 hover:shadow-xs transition group cursor-pointer overflow-hidden rounded-xs"
                 >
                   {/* Left Course Cover with Play Button */}
-                  <div className="w-[120px] h-full shrink-0 relative bg-gradient-to-br from-[#090bc2] via-[#080981] to-[#11172f] flex items-center justify-center p-2 text-center overflow-hidden">
-                    <span className="text-[11px] font-black text-white/90 leading-tight line-clamp-2">
-                      Chat2Build
-                    </span>
-                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                  <div className="w-[120px] h-full shrink-0 relative bg-slate-900 flex items-center justify-center overflow-hidden">
+                    {course.thumbnailUrl ? (
+                      <img
+                        src={course.thumbnailUrl}
+                        alt={course.title}
+                        className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-300"
+                      />
+                    ) : (
+                      <span className="text-[11px] font-black text-white/90 leading-tight line-clamp-2 px-2 text-center">
+                        Chat2Build
+                      </span>
+                    )}
+                    <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
                       <div className="h-8 w-8 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-md group-hover:scale-110 transition">
                         <span className="text-xs ml-0.5 font-black">▶</span>
                       </div>
@@ -259,25 +267,33 @@ export default function StudentCoursesPage() {
                 key={course.id}
                 className="border border-slate-200 rounded-2xl bg-white shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group"
               >
-                {/* Course Banner Cover */}
-                <div className="h-40 bg-gradient-to-br from-[#090bc2] via-[#0e129c] to-[#11172f] p-6 text-white flex flex-col justify-between relative overflow-hidden">
-                  <div className="flex items-center justify-between z-10">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 text-white backdrop-blur-xs">
-                      2-Week Intensive Track
-                    </span>
-                    <span className="text-[11px] font-bold text-emerald-300 bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                      ✓ Enrolled
-                    </span>
-                  </div>
+                {/* Course Banner Cover with Thumbnail */}
+                <div className="h-48 sm:h-52 relative overflow-hidden bg-slate-900">
+                  {course.thumbnailUrl ? (
+                    <img
+                      src={course.thumbnailUrl}
+                      alt={course.title}
+                      className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-[#090bc2] via-[#0e129c] to-[#11172f]" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/25 p-5 flex flex-col justify-between">
+                    <div className="flex items-center justify-between z-10">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 text-white backdrop-blur-xs">
+                        2-Week Intensive Track
+                      </span>
+                      <span className="text-[11px] font-bold text-emerald-300 bg-black/40 px-2.5 py-0.5 rounded-full border border-emerald-500/40 backdrop-blur-xs">
+                        ✓ Enrolled
+                      </span>
+                    </div>
 
-                  <div className="z-10">
-                    <h3 className="text-lg font-black text-white leading-tight group-hover:text-lemon transition">
-                      {course.title}
-                    </h3>
+                    <div className="z-10">
+                      <h3 className="text-lg font-black text-white leading-tight group-hover:text-lemon transition drop-shadow-sm">
+                        {course.title}
+                      </h3>
+                    </div>
                   </div>
-
-                  {/* Decorative background glow */}
-                  <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-full bg-lemon/10 blur-xl pointer-events-none" />
                 </div>
 
                 {/* Course Description & Action */}

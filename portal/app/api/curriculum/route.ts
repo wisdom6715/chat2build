@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
         id: d.id,
         title: data.title || 'Untitled Course',
         description: data.description || '',
-        thumbnailUrl: data.thumbnailUrl || getYouTubeThumbnailUrl(videoUrl),
+        thumbnailUrl: data.thumbnailUrl || '/images/web-dev-bootcamp-ai.jpg',
         introTitle: data.introTitle || 'Orientation & Course Overview',
         introVideoUrl: videoUrl,
         introEmbedUrl: data.introEmbedUrl || getYouTubeEmbedUrl(videoUrl),
@@ -50,9 +50,9 @@ export async function GET(req: NextRequest) {
       coursesList = [
         {
           id: 'default-course',
-          title: 'Chat2Build: Build Your First Web App with AI',
+          title: 'Web Development Bootcamp with AI',
           description: 'A 2-week intensive bootcamp teaching non-programmers how to design, build, and deploy production-ready web applications using modern AI workflows.',
-          thumbnailUrl: getYouTubeThumbnailUrl(defaultVideoUrl),
+          thumbnailUrl: '/images/web-dev-bootcamp-ai.jpg',
           introTitle: 'Orientation & Course Overview',
           introVideoUrl: defaultVideoUrl,
           introEmbedUrl: getYouTubeEmbedUrl(defaultVideoUrl),
