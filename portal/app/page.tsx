@@ -261,9 +261,6 @@ export default function StudentLoginPage() {
             </span>
             <div className="flex items-baseline gap-1.5">
               <span className="font-black text-base tracking-tight text-ink">Chat2Build</span>
-              <span className="text-[11px] font-black uppercase text-[#090bc2] bg-[#090bc2]/10 px-2 py-0.5 rounded-full">
-                Classroom Portal
-              </span>
             </div>
           </div>
 
@@ -271,8 +268,7 @@ export default function StudentLoginPage() {
             href="https://chat2build.pro"
             className="text-xs font-bold text-muted hover:text-ink transition flex items-center gap-1"
           >
-            <span>chat2build.pro</span>
-            <span>↗</span>
+            <span>Register</span>
           </a>
         </div>
       </header>
@@ -295,7 +291,7 @@ export default function StudentLoginPage() {
                 {step === 'PASSWORD_LOGIN' && `Welcome Back, ${studentName}!`}
               </h1>
               <p className="text-xs sm:text-[13px] text-muted mt-2 leading-relaxed">
-                {step === 'EMAIL' && 'Enter your registered email address to access Week 1 & Week 2 classes.'}
+                {step === 'EMAIL' && 'Enter your registered email address to access our course materials and videos'}
                 {step === 'NOT_REGISTERED' && 'You must be registered for the bootcamp before logging in.'}
                 {step === 'OTP' && `We sent a 6-digit code to ${email}.`}
                 {step === 'SET_PASSWORD' && 'Set a secure password for future logins to your classroom.'}
@@ -342,7 +338,7 @@ export default function StudentLoginPage() {
                 </button>
 
                 <p className="text-[11px] text-center text-muted pt-2">
-                  No passwords or complex steps needed to start. We will verify your email with a secure one-time code.
+                  We will verify your email with a secure one-time code or *login(highlightedwith login link)*
                 </p>
               </form>
             )}
@@ -523,7 +519,7 @@ export default function StudentLoginPage() {
 
       {/* Footer */}
       <footer className="border-t border-[#e8e8f0] bg-white py-4 text-center text-[11px] text-muted">
-        <span>&copy; 2026 Chat2Build Bootcamp • app.chat2build.pro • All rights reserved</span>
+        <span>&copy; 2026 Chat2Build Bootcamp • All rights reserved</span>
       </footer>
     </div>
   )
