@@ -4,9 +4,8 @@ import {
   collection,
   doc,
   getDoc,
+  setDoc,
   updateDoc,
-  increment,
-  addDoc,
   getDocs,
   query,
   where,
@@ -16,8 +15,11 @@ import {
 export const dynamic = 'force-dynamic'
 
 function getTodayString(): string {
-  const d = new Date()
-  return d.toISOString().split('T')[0]
+  return new Date().toISOString().split('T')[0]
+}
+
+function sanitizeId(str: string): string {
+  return str.replace(/[^a-zA-Z0-9_-]/g, '_')
 }
 
 export async function POST(req: NextRequest) {
@@ -32,49 +34,63 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Class ID or Course ID required.' }, { status: 400 })
     }
 
-    const viewsRef = collection(db, 'video_views')
+    let viewerId = (body.viewerId || '').trim().toLowerCase()
+    if (!viewerId) {
+      viewerId = 'anonymous_viewer'
+    }
 
-    // 1. Record individual view event
-    await addDoc(viewsRef, {
-      classId: classId || 'intro',
-      courseId: courseId || '',
-      isIntro,
-      date: today,
-      createdAt: serverTimestamp(),
+    const targetId = isIntro ? `intro-${courseId || 'default'}` : classId
+    const docKey = `${sanitizeId(targetId)}__${sanitizeId(viewerId)}`
+
+    const viewerDocRef = doc(db, 'video_unique_viewers', docKey)
+    const viewerDocSnap = await getDoc(viewerDocRef)
+
+    if (!viewerDocSnap.exists()) {
+      await setDoc(viewerDocRef, {
+        targetId,
+        classId: classId || '',
+        courseId: courseId || '',
+        isIntro,
+        viewerId,
+        firstViewedAt: serverTimestamp(),
+        lastViewedAt: serverTimestamp(),
+        lastViewedDate: today,
+      })
+    } else {
+      await updateDoc(viewerDocRef, {
+        lastViewedAt: serverTimestamp(),
+        lastViewedDate: today,
+      })
+    }
+
+    const uvCollection = collection(db, 'video_unique_viewers')
+    const qTotal = query(uvCollection, where('targetId', '==', targetId))
+    const totalSnap = await getDocs(qTotal)
+    const totalUniqueViewers = totalSnap.size
+
+    let todayUniqueViewers = 0
+    totalSnap.docs.forEach((d) => {
+      if (d.data().lastViewedDate === today) {
+        todayUniqueViewers++
+      }
     })
-
-    // 2. Increment counters on target doc
-    let newTotal = 1
 
     if (isIntro && courseId) {
       try {
         const cRef = doc(db, 'curriculum_courses', courseId)
-        await updateDoc(cRef, { introViewCount: increment(1) })
-        const cSnap = await getDoc(cRef)
-        newTotal = cSnap.data()?.introViewCount || 1
+        await updateDoc(cRef, { introViewCount: totalUniqueViewers })
       } catch {}
     } else if (classId) {
       try {
         const clRef = doc(db, 'curriculum_classes', classId)
-        await updateDoc(clRef, { viewCount: increment(1) })
-        const clSnap = await getDoc(clRef)
-        newTotal = clSnap.data()?.viewCount || 1
+        await updateDoc(clRef, { viewCount: totalUniqueViewers })
       } catch {}
     }
 
-    // 3. Count today's views
-    let todayCount = 1
-    try {
-      const targetId = isIntro ? 'intro' : classId
-      const q = query(viewsRef, where('classId', '==', targetId), where('date', '==', today))
-      const todaySnap = await getDocs(q)
-      todayCount = todaySnap.size || 1
-    } catch {}
-
     return NextResponse.json({
       success: true,
-      viewCount: newTotal,
-      todayViews: todayCount,
+      viewCount: totalUniqueViewers,
+      todayViews: todayUniqueViewers,
     })
   } catch (err: any) {
     console.error('[Views API error]:', err)
@@ -86,31 +102,30 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const classId = searchParams.get('classId')
+    const courseId = searchParams.get('courseId')
     const isIntro = searchParams.get('isIntro') === 'true'
     const today = getTodayString()
 
-    const targetId = isIntro ? 'intro' : classId
+    const targetId = isIntro ? `intro-${courseId || 'default'}` : classId
     if (!targetId) {
       return NextResponse.json({ viewCount: 0, todayViews: 0 })
     }
 
-    const viewsRef = collection(db, 'video_views')
-    let todayCount = 0
-    let totalCount = 0
+    const uvCollection = collection(db, 'video_unique_viewers')
+    const qTotal = query(uvCollection, where('targetId', '==', targetId))
+    const totalSnap = await getDocs(qTotal)
+    const totalUniqueViewers = totalSnap.size
 
-    try {
-      const qToday = query(viewsRef, where('classId', '==', targetId), where('date', '==', today))
-      const snapToday = await getDocs(qToday)
-      todayCount = snapToday.size
-
-      const qTotal = query(viewsRef, where('classId', '==', targetId))
-      const snapTotal = await getDocs(qTotal)
-      totalCount = snapTotal.size
-    } catch {}
+    let todayUniqueViewers = 0
+    totalSnap.docs.forEach((d) => {
+      if (d.data().lastViewedDate === today) {
+        todayUniqueViewers++
+      }
+    })
 
     return NextResponse.json({
-      viewCount: totalCount,
-      todayViews: todayCount,
+      viewCount: totalUniqueViewers,
+      todayViews: todayUniqueViewers,
     })
   } catch (err: any) {
     return NextResponse.json({ viewCount: 0, todayViews: 0 })

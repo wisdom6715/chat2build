@@ -70,15 +70,15 @@ export async function GET(req: NextRequest) {
       ? coursesList.find((c) => c.id === courseIdParam)
       : coursesList[0]) || coursesList[0]
 
-    // 2. Fetch today's view counts from video_views
-    const viewsRef = collection(db, 'video_views')
+    // 2. Fetch today's unique view counts from video_unique_viewers
+    const uvRef = collection(db, 'video_unique_viewers')
     let todayViewCounts: Record<string, number> = {}
     try {
-      const qToday = query(viewsRef, where('date', '==', today))
+      const qToday = query(uvRef, where('lastViewedDate', '==', today))
       const snapToday = await getDocs(qToday)
       snapToday.docs.forEach((docSnap) => {
         const v = docSnap.data()
-        const target = v.classId || (v.isIntro ? 'intro' : null)
+        const target = v.targetId || v.classId
         if (target) {
           todayViewCounts[target] = (todayViewCounts[target] || 0) + 1
         }

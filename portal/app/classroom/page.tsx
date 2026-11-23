@@ -180,12 +180,21 @@ function ClassroomContent() {
     init()
   }, [courseIdParam, classIdParam, router])
 
-  // 2. Track Video View when activeLesson changes
+  // 2. Track Video View when activeLesson changes (Unique person tracking)
   useEffect(() => {
     if (!activeLesson) return
 
     const recordView = async () => {
       try {
+        let deviceId = ''
+        try {
+          deviceId = localStorage.getItem('c2b_viewer_id') || ''
+          if (!deviceId) {
+            deviceId = 'dev_' + Math.random().toString(36).substring(2, 15)
+            localStorage.setItem('c2b_viewer_id', deviceId)
+          }
+        } catch {}
+
         const res = await fetch('/api/views', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -193,6 +202,7 @@ function ClassroomContent() {
             classId: activeLesson.isIntro ? '' : activeLesson.id,
             courseId: course?.id || '',
             isIntro: activeLesson.isIntro,
+            viewerId: student?.email || deviceId,
           }),
         })
         const data = await res.json()
@@ -212,7 +222,7 @@ function ClassroomContent() {
     }
 
     recordView()
-  }, [activeLesson?.id, activeLesson?.isIntro, course?.id])
+  }, [activeLesson?.id, activeLesson?.isIntro, course?.id, student?.email])
 
   // Select Introduction Class
   const handleSelectIntro = () => {
