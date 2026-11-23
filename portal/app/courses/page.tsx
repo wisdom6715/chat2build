@@ -196,48 +196,49 @@ export default function StudentCoursesPage() {
             <div className="py-8 text-center text-xs text-slate-400">No courses available.</div>
           ) : (
             <div className="flex items-stretch gap-4 overflow-x-auto pb-2">
-              {courses.map((course) => (
-                <Link
-                  key={course.id}
-                  href={`/classroom?courseId=${course.id}`}
-                  className="flex shrink-0 w-[340px] sm:w-[380px] h-[105px] border border-slate-200 bg-white hover:border-slate-300 hover:shadow-xs transition group cursor-pointer overflow-hidden rounded-xs"
-                >
-                  {/* Left Course Cover with Play Button */}
-                  <div className="w-[120px] h-full shrink-0 relative bg-slate-900 flex items-center justify-center overflow-hidden">
-                    {course.thumbnailUrl ? (
+              {courses.map((course) => {
+                const thumbnailSrc = course.thumbnailUrl || '/images/web-dev-bootcamp-ai.jpg'
+
+                return (
+                  <Link
+                    key={course.id}
+                    href={`/classroom?courseId=${course.id}`}
+                    className="flex shrink-0 w-[340px] sm:w-[380px] h-[105px] border border-slate-200 bg-white hover:border-slate-300 hover:shadow-xs transition group cursor-pointer overflow-hidden rounded-xs"
+                  >
+                    {/* Left Course Cover with Play Button */}
+                    <div className="w-[120px] h-full shrink-0 relative bg-slate-100 border-r border-slate-200 flex items-center justify-center overflow-hidden">
                       <img
-                        src={course.thumbnailUrl}
+                        src={thumbnailSrc}
                         alt={course.title}
+                        onError={(e) => {
+                          ;(e.target as HTMLImageElement).src = '/web-dev-bootcamp-ai.jpg'
+                        }}
                         className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-300"
                       />
-                    ) : (
-                      <span className="text-[11px] font-black text-white/90 leading-tight line-clamp-2 px-2 text-center">
-                        Chat2Build
-                      </span>
-                    )}
-                    <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
-                      <div className="h-8 w-8 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-md group-hover:scale-110 transition">
-                        <span className="text-xs ml-0.5 font-black">▶</span>
+                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                        <div className="h-8 w-8 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-md group-hover:scale-110 transition">
+                          <span className="text-xs ml-0.5 font-black">▶</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Right Course Details */}
-                  <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
-                    <div className="space-y-0.5">
-                      <p className="text-[11px] text-slate-500 font-semibold truncate">
-                        {course.title}
-                      </p>
-                      <h3 className="text-xs font-bold text-slate-900 leading-snug line-clamp-2 group-hover:text-[#090bc2] transition">
-                        {course.introTitle || 'Orientation & Course Overview'}
-                      </h3>
+                    {/* Right Course Details */}
+                    <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
+                      <div className="space-y-0.5">
+                        <p className="text-[11px] text-slate-500 font-semibold truncate">
+                          {course.title}
+                        </p>
+                        <h3 className="text-xs font-bold text-slate-900 leading-snug line-clamp-2 group-hover:text-[#090bc2] transition">
+                          {course.introTitle || 'Orientation & Course Overview'}
+                        </h3>
+                      </div>
+                      <div className="text-[11px] text-slate-500 font-medium">
+                        Lecture • {course.introDuration || '15m'}
+                      </div>
                     </div>
-                    <div className="text-[11px] text-slate-500 font-medium">
-                      Lecture • {course.introDuration || '15m'}
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                )
+              })}
             </div>
           )}
         </div>
@@ -262,65 +263,62 @@ export default function StudentCoursesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {courses.map((course) => (
-              <div
-                key={course.id}
-                className="border border-slate-200 rounded-2xl bg-white shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group"
-              >
-                {/* Course Banner Cover with Thumbnail */}
-                <div className="h-48 sm:h-52 relative overflow-hidden bg-slate-900">
-                  {course.thumbnailUrl ? (
+            {courses.map((course) => {
+              const thumbnailSrc = course.thumbnailUrl || '/images/web-dev-bootcamp-ai.jpg'
+
+              return (
+                <div
+                  key={course.id}
+                  className="border border-slate-200 rounded-2xl bg-white shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group max-w-lg"
+                >
+                  {/* Course Thumbnail Poster */}
+                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 border-b border-slate-200">
                     <img
-                      src={course.thumbnailUrl}
+                      src={thumbnailSrc}
                       alt={course.title}
-                      className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-300"
+                      onError={(e) => {
+                        ;(e.target as HTMLImageElement).src = '/web-dev-bootcamp-ai.jpg'
+                      }}
+                      className="w-full h-full object-cover object-top group-hover:scale-102 transition duration-300"
                     />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-[#090bc2] via-[#0e129c] to-[#11172f]" />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/25 p-5 flex flex-col justify-between">
-                    <div className="flex items-center justify-between z-10">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 text-white backdrop-blur-xs">
-                        2-Week Intensive Track
+                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-900/90 text-white backdrop-blur-xs shadow-xs">
+                        2-Week Intensive
                       </span>
-                      <span className="text-[11px] font-bold text-emerald-300 bg-black/40 px-2.5 py-0.5 rounded-full border border-emerald-500/40 backdrop-blur-xs">
+                      <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-300 shadow-xs">
                         ✓ Enrolled
                       </span>
                     </div>
+                  </div>
 
-                    <div className="z-10">
-                      <h3 className="text-lg font-black text-white leading-tight group-hover:text-lemon transition drop-shadow-sm">
+                  {/* Course Details & Action */}
+                  <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+                    <div>
+                      <h3 className="text-lg font-black text-slate-900 group-hover:text-[#090bc2] transition">
                         {course.title}
                       </h3>
+                      <p className="text-xs text-slate-600 leading-relaxed mt-2 line-clamp-2">
+                        {course.description ||
+                          'Turn your ideas into web apps and websites by simply describing what you want. No coding experience required.'}
+                      </p>
                     </div>
+
+                    <div className="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-100">
+                      <span>📚 2 Weeks • 100% Free</span>
+                      <span>⭐ 5.0 Rating</span>
+                    </div>
+
+                    <Link
+                      href={`/classroom?courseId=${course.id}`}
+                      className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-lemon hover:brightness-105 text-[#080981] font-black text-xs transition shadow-xs cursor-pointer"
+                    >
+                      <span>Continue Learning</span>
+                      <span>→</span>
+                    </Link>
                   </div>
                 </div>
-
-                {/* Course Description & Action */}
-                <div className="p-6 flex-1 flex flex-col justify-between space-y-5">
-                  <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
-                    {course.description ||
-                      'Learn step-by-step how to conceptualize, design, and deploy full-stack web applications using cutting-edge AI workflows.'}
-                  </p>
-
-                  <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
-                    <span>📚 {course.moduleCount || 2} Weeks</span>
-                    <span>•</span>
-                    <span>🎥 Video Lectures &amp; Slides</span>
-                    <span>•</span>
-                    <span>⭐ 5.0 Rating</span>
-                  </div>
-
-                  <Link
-                    href={`/classroom?courseId=${course.id}`}
-                    className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-lemon hover:brightness-105 text-[#080981] font-black text-xs transition shadow-xs cursor-pointer"
-                  >
-                    <span>Continue Learning</span>
-                    <span>→</span>
-                  </Link>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </main>
