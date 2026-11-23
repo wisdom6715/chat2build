@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useState, useEffect, useMemo, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 
 interface ClassItem {
   id: string
@@ -14,15 +15,32 @@ interface ClassItem {
   slideUrl?: string
   duration?: string
   notes?: string
+  viewCount?: number
+  todayViews?: number
 }
 
 interface ModuleItem {
   id: string
+  courseId?: string
   title: string
   weekNumber: number
   order: number
   description?: string
   classes: ClassItem[]
+}
+
+interface CourseItem {
+  id: string
+  title: string
+  description?: string
+  introTitle?: string
+  introVideoUrl?: string
+  introEmbedUrl?: string
+  introSlideUrl?: string
+  introDuration?: string
+  introNotes?: string
+  introViewCount?: number
+  todayViews?: number
 }
 
 interface StudentUser {
@@ -31,19 +49,36 @@ interface StudentUser {
   completedClasses: string[]
 }
 
+interface ActiveLesson {
+  id: string
+  isIntro: boolean
+  title: string
+  classNumber?: number
+  duration?: string
+  embedUrl: string
+  youtubeUrl: string
+  slideUrl?: string
+  notes?: string
+  viewCount: number
+  todayViews: number
+}
+
 type TabType = 'overview' | 'qa' | 'notes' | 'slides' | 'announcements'
 
-export default function StudentClassroomPage() {
+function ClassroomContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const courseIdParam = searchParams.get('courseId')
 
   const [student, setStudent] = useState<StudentUser | null>(null)
+  const [course, setCourse] = useState<CourseItem | null>(null)
   const [modules, setModules] = useState<ModuleItem[]>([])
-  const [activeClass, setActiveClass] = useState<ClassItem | null>(null)
+  const [activeLesson, setActiveLesson] = useState<ActiveLesson | null>(null)
   const [completedClasses, setCompletedClasses] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [markingProgress, setMarkingProgress] = useState(false)
 
-  // Udemy-style Layout states
+  // Layout states
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({})
@@ -70,37 +105,119 @@ export default function StudentClassroomPage() {
         })
         setCompletedClasses(authData.completedClasses || [])
 
-        // Fetch curriculum
-        const currRes = await fetch('/api/curriculum')
+        // Fetch curriculum for course
+        const url = courseIdParam ? `/api/curriculum?courseId=${courseIdParam}` : '/api/curriculum'
+        const currRes = await fetch(url)
         const currData = await currRes.json()
 
-        if (currRes.ok && currData.modules) {
-          setModules(currData.modules)
+        if (currRes.ok) {
+          const activeCourse: CourseItem = currData.activeCourse || currData.courses?.[0]
+          setCourse(activeCourse)
 
-          // Expand all modules by default
-          const initialExpanded: Record<string, boolean> = {}
-          currData.modules.forEach((m: ModuleItem) => {
-            initialExpanded[m.id] = true
-          })
-          setExpandedModules(initialExpanded)
+          if (currData.modules) {
+            setModules(currData.modules)
 
-          // Find first class to activate
-          for (const m of currData.modules) {
-            if (m.classes && m.classes.length > 0) {
-              setActiveClass(m.classes[0])
-              break
-            }
+            // Expand all modules by default
+            const initialExpanded: Record<string, boolean> = {}
+            currData.modules.forEach((m: ModuleItem) => {
+              initialExpanded[m.id] = true
+            })
+            setExpandedModules(initialExpanded)
+          }
+
+          // Per requirement: Course Introduction Class comes first upon clicking the course!
+          if (activeCourse) {
+            setActiveLesson({
+              id: `intro-${activeCourse.id}`,
+              isIntro: true,
+              title: activeCourse.introTitle || 'Orientation & Course Overview',
+              duration: activeCourse.introDuration || '15 mins',
+              embedUrl: activeCourse.introEmbedUrl || 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
+              youtubeUrl: activeCourse.introVideoUrl || '',
+              slideUrl: activeCourse.introSlideUrl || '',
+              notes: activeCourse.introNotes || 'Welcome to Chat2Build! Watch this orientation class to learn about the schedule, tools, and community.',
+              viewCount: activeCourse.introViewCount || 0,
+              todayViews: activeCourse.todayViews || 0,
+            })
           }
         }
       } catch (err) {
-        console.error('Initialization error:', err)
+        console.error('Classroom initialization error:', err)
       } finally {
         setLoading(false)
       }
     }
 
     init()
-  }, [router])
+  }, [courseIdParam, router])
+
+  // 2. Track Video View when activeLesson changes
+  useEffect(() => {
+    if (!activeLesson) return
+
+    const recordView = async () => {
+      try {
+        const res = await fetch('/api/views', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            classId: activeLesson.isIntro ? '' : activeLesson.id,
+            courseId: course?.id || '',
+            isIntro: activeLesson.isIntro,
+          }),
+        })
+        const data = await res.json()
+        if (res.ok && data.success) {
+          setActiveLesson((prev) => {
+            if (!prev) return null
+            return {
+              ...prev,
+              viewCount: data.viewCount,
+              todayViews: data.todayViews,
+            }
+          })
+        }
+      } catch (err) {
+        // Silently handle view tracking failure
+      }
+    }
+
+    recordView()
+  }, [activeLesson?.id, activeLesson?.isIntro, course?.id])
+
+  // Select Introduction Class
+  const handleSelectIntro = () => {
+    if (!course) return
+    setActiveLesson({
+      id: `intro-${course.id}`,
+      isIntro: true,
+      title: course.introTitle || 'Orientation & Course Overview',
+      duration: course.introDuration || '15 mins',
+      embedUrl: course.introEmbedUrl || '',
+      youtubeUrl: course.introVideoUrl || '',
+      slideUrl: course.introSlideUrl || '',
+      notes: course.introNotes || '',
+      viewCount: course.introViewCount || 0,
+      todayViews: course.todayViews || 0,
+    })
+  }
+
+  // Select a Class inside a module
+  const handleSelectClass = (cls: ClassItem) => {
+    setActiveLesson({
+      id: cls.id,
+      isIntro: false,
+      title: cls.title,
+      classNumber: cls.classNumber,
+      duration: cls.duration,
+      embedUrl: cls.embedUrl,
+      youtubeUrl: cls.youtubeUrl,
+      slideUrl: cls.slideUrl,
+      notes: cls.notes,
+      viewCount: cls.viewCount || 0,
+      todayViews: cls.todayViews || 0,
+    })
+  }
 
   // Toggle Module accordion collapse
   const toggleModule = (moduleId: string) => {
@@ -111,17 +228,17 @@ export default function StudentClassroomPage() {
   }
 
   // Toggle class completion status
-  const handleToggleCompleted = async (classId: string, e?: React.MouseEvent) => {
+  const handleToggleCompleted = async (lessonId: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation()
     if (markingProgress) return
     setMarkingProgress(true)
 
-    const isCurrentlyCompleted = completedClasses.includes(classId)
+    const isCurrentlyCompleted = completedClasses.includes(lessonId)
     const nextState = !isCurrentlyCompleted
 
     // Optimistic UI update
     setCompletedClasses((prev) =>
-      nextState ? [...prev, classId] : prev.filter((id) => id !== classId)
+      nextState ? [...prev, lessonId] : prev.filter((id) => id !== lessonId)
     )
 
     try {
@@ -129,7 +246,7 @@ export default function StudentClassroomPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          classId,
+          classId: lessonId,
           completed: nextState,
         }),
       })
@@ -154,14 +271,14 @@ export default function StudentClassroomPage() {
 
   // Share portal link
   const handleShare = () => {
-    navigator.clipboard?.writeText(window.location.origin)
+    navigator.clipboard?.writeText(window.location.href)
     setShareToast(true)
     setTimeout(() => setShareToast(false), 3000)
   }
 
-  // Calculate overall course statistics
+  // Overall course statistics
   const totalClassesCount = useMemo(
-    () => modules.reduce((sum, m) => sum + (m.classes?.length || 0), 0),
+    () => 1 + modules.reduce((sum, m) => sum + (m.classes?.length || 0), 0),
     [modules]
   )
   const completedCount = completedClasses.length
@@ -181,27 +298,43 @@ export default function StudentClassroomPage() {
     )
   }
 
+  const isCurrentCompleted = activeLesson ? completedClasses.includes(activeLesson.id) : false
+
   return (
     <div className="min-h-screen bg-[#fafafc] text-[#11172f] flex flex-col font-sans">
       {/* ======================================================== */}
       {/* 1. TOP UDEMY-STYLE NAV BAR (#1c1d1f / Dark Theater Bar)  */}
       {/* ======================================================== */}
       <header className="bg-[#1c1d1f] text-white h-[60px] border-b border-[#2d2f31] flex items-center justify-between px-4 sm:px-6 sticky top-0 z-40 select-none">
-        {/* Left: Brand Logo & Course Title */}
+        {/* Left: Brand Logo & Course Title & Back to Courses */}
         <div className="flex items-center gap-3.5 min-w-0">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/')}>
+          <Link
+            href="/courses"
+            className="flex items-center gap-2 hover:opacity-85 transition"
+            title="Return to Course Catalog"
+          >
             <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[#090bc2] text-white font-black text-xs shadow-sm">
               C
             </span>
             <span className="font-bold text-sm tracking-tight hidden sm:inline text-white">
               Chat2Build
             </span>
-          </div>
+          </Link>
 
           <span className="text-[#3e4143] text-base font-light hidden sm:inline">|</span>
 
-          <h1 className="text-xs sm:text-[13px] font-semibold text-slate-200 truncate max-w-[280px] sm:max-w-md lg:max-w-xl">
-            Chat2Build — Build Your First Web App with AI (2-Week Intensive Bootcamp)
+          <Link
+            href="/courses"
+            className="text-xs font-bold text-slate-400 hover:text-white transition flex items-center gap-1 hidden md:flex shrink-0"
+          >
+            <span>←</span>
+            <span>All Courses</span>
+          </Link>
+
+          <span className="text-[#3e4143] text-base font-light hidden md:inline">|</span>
+
+          <h1 className="text-xs sm:text-[13px] font-semibold text-slate-200 truncate max-w-[240px] sm:max-w-sm lg:max-w-xl">
+            {course?.title || 'Chat2Build — Web App Bootcamp'}
           </h1>
         </div>
 
@@ -222,12 +355,17 @@ export default function StudentClassroomPage() {
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#3e4143] hover:bg-[#2d2f31] text-xs font-bold text-slate-200 transition cursor-pointer"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+              />
             </svg>
             <span>{shareToast ? 'Link Copied! ✓' : 'Share'}</span>
           </button>
 
-          {/* Toggle Course Content Sidebar Button (Mobile & Desktop) */}
+          {/* Toggle Course Content Sidebar Button */}
           <button
             type="button"
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -254,6 +392,13 @@ export default function StudentClassroomPage() {
                   <p className="text-[11px] text-muted truncate">{student?.email}</p>
                 </div>
                 <div className="pt-2 space-y-1">
+                  <Link
+                    href="/courses"
+                    className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 text-slate-800 font-bold"
+                  >
+                    <span>📚 My Courses</span>
+                    <span>→</span>
+                  </Link>
                   <a
                     href="https://chat.whatsapp.com/JX9whdzwMAdG1NhD5M5XvS?s=cl&p=a&mlu=4&ilr=4"
                     target="_blank"
@@ -266,7 +411,7 @@ export default function StudentClassroomPage() {
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="w-full text-left p-2 rounded-lg hover:bg-red-50 text-red-600 font-bold"
+                    className="w-full text-left p-2 rounded-lg hover:bg-red-50 text-red-600 font-bold cursor-pointer"
                   >
                     Log Out
                   </button>
@@ -293,11 +438,11 @@ export default function StudentClassroomPage() {
           <div className="bg-black w-full flex justify-center items-center shadow-lg">
             <div className="w-full max-w-[1400px]">
               <div className="relative aspect-video w-full bg-black">
-                {activeClass?.embedUrl ? (
+                {activeLesson?.embedUrl ? (
                   <iframe
-                    key={activeClass.id}
-                    src={`${activeClass.embedUrl}?autoplay=0&rel=0&modestbranding=1`}
-                    title={activeClass.title}
+                    key={activeLesson.id}
+                    src={`${activeLesson.embedUrl}?autoplay=0&rel=0&modestbranding=1`}
+                    title={activeLesson.title}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
                     className="absolute inset-0 h-full w-full border-0"
@@ -336,7 +481,7 @@ export default function StudentClassroomPage() {
                 }`}
               >
                 <span>Slides &amp; Resources</span>
-                {activeClass?.slideUrl && (
+                {activeLesson?.slideUrl && (
                   <span className="h-2 w-2 rounded-full bg-lemon animate-pulse" />
                 )}
               </button>
@@ -382,39 +527,58 @@ export default function StudentClassroomPage() {
           {/* TAB 1: OVERVIEW CONTENT */}
           {activeTab === 'overview' && (
             <div className="p-4 sm:p-8 max-w-4xl space-y-6">
-              {activeClass ? (
+              {activeLesson ? (
                 <>
-                  {/* Class Headline & Completion Button */}
+                  {/* Class Headline & TOP ROW: Title on Left, Slide Button + Completion Button OPPOSITE */}
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                     <div>
                       <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#090bc2] text-white">
-                        Class {activeClass.classNumber}
+                        {activeLesson.isIntro
+                          ? 'Course Introduction Class'
+                          : `Class ${activeLesson.classNumber || 1}`}
                       </span>
                       <h2 className="text-2xl sm:text-3xl font-black text-ink mt-2 leading-tight">
-                        {activeClass.title}
+                        {activeLesson.title}
                       </h2>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleToggleCompleted(activeClass.id)}
-                      disabled={markingProgress}
-                      className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition cursor-pointer shrink-0 ${
-                        completedClasses.includes(activeClass.id)
-                          ? 'bg-emerald-600 text-white shadow-xs hover:bg-emerald-700'
-                          : 'bg-lemon text-[#080981] hover:brightness-105 shadow-xs'
-                      }`}
-                    >
-                      <span>
-                        {completedClasses.includes(activeClass.id)
-                          ? '✓ Class Completed'
-                          : 'Mark as Completed'}
-                      </span>
-                      <span>⭐</span>
-                    </button>
+                    {/* OPPOSITE THE TOPIC: Vivid Presentation Slide Download Button & Completion Button */}
+                    <div className="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap">
+                      {/* VIVID SLIDE DOWNLOAD BUTTON OPPOSITE TOPIC */}
+                      {activeLesson.slideUrl ? (
+                        <a
+                          href={activeLesson.slideUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-[#090bc2] hover:bg-[#080981] text-white shadow-md hover:shadow-lg transition cursor-pointer ring-2 ring-[#090bc2]/20"
+                          title="Click to view and download presentation slide PDF immediately"
+                        >
+                          <span>📄 Download Slides</span>
+                          <span className="text-lemon">📥</span>
+                        </a>
+                      ) : null}
+
+                      {/* Completion Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleCompleted(activeLesson.id)}
+                        disabled={markingProgress}
+                        className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition cursor-pointer shrink-0 ${
+                          isCurrentCompleted
+                            ? 'bg-emerald-600 text-white shadow-xs hover:bg-emerald-700'
+                            : 'bg-lemon text-[#080981] hover:brightness-105 shadow-xs'
+                        }`}
+                      >
+                        <span>
+                          {isCurrentCompleted ? '✓ Class Completed' : 'Mark as Completed'}
+                        </span>
+                        <span>⭐</span>
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Course / Cohort Ratings & Meta Indicators (Udemy Style) */}
+                  {/* Course / Cohort Ratings & Meta Indicators */}
+                  {/* NOTE: Replaced 'November 2026 Immersion' with LIVE VIDEO VIEWER COUNTER per prompt! */}
                   <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-bold text-muted border-b border-[#e8e8f0] pb-5">
                     <span className="flex items-center gap-1 text-[#b4690e]">
                       <span className="text-sm font-black">5.0</span>
@@ -427,170 +591,144 @@ export default function StudentClassroomPage() {
                       <span>Active Builders</span>
                     </span>
 
-                    {activeClass.duration && (
+                    {activeLesson.duration && (
                       <span className="flex items-center gap-1 text-ink">
                         <span>⏱️</span>
-                        <span>{activeClass.duration}</span>
+                        <span>{activeLesson.duration}</span>
                       </span>
                     )}
 
-                    <span className="flex items-center gap-1 text-slate-500">
-                      <span>🗓️</span>
-                      <span>November 2026 Immersion</span>
+                    {/* LIVE VIEWER COUNTER (Replaces November 2026 Immersion) */}
+                    <span className="flex items-center gap-1.5 bg-blue-50/80 text-[#090bc2] px-3 py-1 rounded-lg border border-[#090bc2]/15 font-black">
+                      <span>👁️</span>
+                      <span className="tabular-num">{activeLesson.viewCount} viewers</span>
+                      <span className="text-[#090bc2]/40">•</span>
+                      <span className="tabular-num text-emerald-700 font-extrabold">
+                        {activeLesson.todayViews} today
+                      </span>
                     </span>
                   </div>
 
-                  {/* Slide Download Banner */}
-                  {activeClass.slideUrl && (
-                    <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-white border border-[#090bc2]/20 flex items-center justify-between gap-4 shadow-xs">
-                      <div className="flex items-center gap-3">
-                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#090bc2] text-white text-base shrink-0">
-                          📄
-                        </span>
-                        <div>
-                          <h4 className="text-xs font-black text-ink">Presentation Slides (PDF)</h4>
-                          <p className="text-[11px] text-muted">
-                            Review lecture slides, component diagrams, and reference architectures.
-                          </p>
-                        </div>
-                      </div>
-
-                      <a
-                        href={activeClass.slideUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#090bc2] hover:bg-[#080981] text-white text-xs font-black transition shrink-0"
-                      >
-                        <span>Download PDF</span>
-                        <span>↓</span>
-                      </a>
-                    </div>
-                  )}
-
-                  {/* Class Notes / Overview Text */}
+                  {/* About This Class & Lesson Notes */}
                   <div className="space-y-3 pt-2">
                     <h3 className="text-base font-black text-ink">About this class</h3>
-                    {activeClass.notes ? (
-                      <p className="text-xs sm:text-sm text-slate-700 leading-relaxed whitespace-pre-line">
-                        {activeClass.notes}
-                      </p>
-                    ) : (
-                      <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                        In this session, you learn step-by-step how to conceptualize, design, and deploy full-stack web applications using cutting-edge AI workflows. Watch the video above and follow along in your development environment!
-                      </p>
-                    )}
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      {activeLesson.notes ||
+                        'In this session, you learn step-by-step how to conceptualize, design, and deploy full-stack web applications using cutting-edge AI workflows. Watch the video above and follow along in your development environment!'}
+                    </p>
                   </div>
                 </>
               ) : (
-                <div className="py-12 text-center text-muted text-xs">
-                  Select a class from the course content sidebar to view details.
+                <div className="py-12 text-center text-muted text-sm">
+                  Please select a class from the course content sidebar to begin learning.
                 </div>
               )}
             </div>
           )}
 
-          {/* TAB 2: SLIDES & RESOURCES */}
+          {/* TAB 2: SLIDES & RESOURCES TAB */}
           {activeTab === 'slides' && (
             <div className="p-4 sm:p-8 max-w-4xl space-y-6">
-              <h3 className="text-lg font-black text-ink">Lesson Slides &amp; Resources</h3>
-              {activeClass?.slideUrl ? (
-                <div className="space-y-4">
-                  <div className="p-5 rounded-2xl bg-white border border-line flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
-                    <div className="flex items-start gap-3">
-                      <span className="text-2xl">📑</span>
+              <h3 className="text-base font-black text-ink">Lecture Slides &amp; Resources</h3>
+              {activeLesson?.slideUrl ? (
+                <div className="p-6 rounded-2xl bg-white border border-[#e8e8f0] space-y-4 shadow-xs">
+                  <div className="flex items-center justify-between gap-4 flex-wrap">
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#090bc2] text-white text-xl">
+                        📄
+                      </span>
                       <div>
-                        <h4 className="text-sm font-black text-ink">{activeClass.title} — Slide Deck</h4>
-                        <p className="text-xs text-muted mt-0.5">
-                          Official PDF slides with code snippets and design references.
-                        </p>
+                        <h4 className="font-bold text-sm text-ink">{activeLesson.title} — Slide Deck</h4>
+                        <p className="text-xs text-muted">Official lecture slides and architecture blueprints</p>
                       </div>
                     </div>
 
                     <a
-                      href={activeClass.slideUrl}
+                      href={activeLesson.slideUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="primary-button py-2.5 px-4 text-xs font-black shrink-0"
+                      className="px-5 py-2.5 rounded-xl bg-lemon hover:brightness-105 text-[#080981] font-black text-xs transition"
                     >
-                      <span>Open Slide Deck (PDF)</span>
-                      <span>↗</span>
+                      Open PDF in New Tab ↗
                     </a>
                   </div>
 
-                  {/* Embedded PDF Viewer if valid URL */}
-                  <div className="aspect-[4/3] w-full rounded-2xl overflow-hidden border border-line bg-slate-100 shadow-inner">
+                  {/* Embedded PDF iframe viewer if browser supports */}
+                  <div className="aspect-video w-full rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
                     <iframe
-                      src={activeClass.slideUrl}
-                      title="Slide Preview"
-                      className="h-full w-full"
+                      src={activeLesson.slideUrl}
+                      title="Presentation Slide Deck"
+                      className="w-full h-full border-0"
                     />
                   </div>
                 </div>
               ) : (
-                <div className="py-12 text-center rounded-2xl bg-white border border-line p-6">
-                  <span className="text-3xl">📄</span>
-                  <p className="text-xs font-bold text-muted mt-2">
-                    No PDF slides uploaded for this class yet. Watch the video above!
-                  </p>
+                <div className="p-8 rounded-2xl bg-white border border-[#e8e8f0] text-center space-y-2">
+                  <p className="text-sm font-bold text-ink">No slides attached to this class yet.</p>
+                  <p className="text-xs text-muted">Check back soon or ask in the WhatsApp group.</p>
                 </div>
               )}
             </div>
           )}
 
-          {/* TAB 3: Q&A & COMMUNITY */}
+          {/* TAB 3: Q&A & WHATSAPP MENTORS */}
           {activeTab === 'qa' && (
             <div className="p-4 sm:p-8 max-w-4xl space-y-6">
-              <div className="p-6 rounded-3xl bg-gradient-to-r from-emerald-500/10 via-[#090bc2]/10 to-transparent border border-emerald-500/20 space-y-4">
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-50 via-white to-blue-50 border border-emerald-200 space-y-4">
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl">💬</span>
+                  <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-600 text-white text-2xl">
+                    💬
+                  </span>
                   <div>
-                    <h3 className="text-base font-black text-ink">Official Student WhatsApp Community</h3>
-                    <p className="text-xs text-muted">
-                      Direct 24/7 access to mentors, live Q&amp;A sessions, code debugging, and cohort peers.
+                    <h3 className="font-black text-lg text-ink">Official WhatsApp Cohort Group</h3>
+                    <p className="text-xs text-slate-600">
+                      Connect with mentors, ask technical questions, and troubleshoot alongside other builders.
                     </p>
                   </div>
                 </div>
-
-                <a
-                  href="https://chat.whatsapp.com/JX9whdzwMAdG1NhD5M5XvS?s=cl&p=a&mlu=4&ilr=4"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-sm transition"
-                >
-                  <span>👉 Join Student WhatsApp Group</span>
-                  <span>↗</span>
-                </a>
+                <div className="pt-2">
+                  <a
+                    href="https://chat.whatsapp.com/JX9whdzwMAdG1NhD5M5XvS?s=cl&p=a&mlu=4&ilr=4"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs transition shadow-sm"
+                  >
+                    <span>Join WhatsApp Community</span>
+                    <span>↗</span>
+                  </a>
+                </div>
               </div>
             </div>
           )}
 
           {/* TAB 4: NOTES */}
           {activeTab === 'notes' && (
-            <div className="p-4 sm:p-8 max-w-4xl space-y-4">
-              <h3 className="text-lg font-black text-ink">Your Personal Notes</h3>
-              <p className="text-xs text-muted">
-                Keep quick timestamps and code snippets handy while watching lessons.
-              </p>
-              <textarea
-                rows={6}
-                placeholder="Type your notes for this class here..."
-                className="w-full rounded-2xl border border-line p-4 text-xs text-ink focus:border-[#090bc2] focus:outline-none"
-              />
+            <div className="p-4 sm:p-8 max-w-4xl space-y-6">
+              <h3 className="text-base font-black text-ink">Personal Class Notes</h3>
+              <div className="bg-white rounded-2xl border border-[#e8e8f0] p-6 space-y-3">
+                <p className="text-xs text-slate-500">
+                  Take notes during this video class. Notes are kept local to your learning environment.
+                </p>
+                <textarea
+                  rows={8}
+                  placeholder="Type your notes, shortcuts, and ideas here..."
+                  className="w-full p-4 rounded-xl border border-slate-200 text-xs focus:border-[#090bc2] focus:outline-hidden"
+                />
+              </div>
             </div>
           )}
 
           {/* TAB 5: ANNOUNCEMENTS */}
           {activeTab === 'announcements' && (
-            <div className="p-4 sm:p-8 max-w-4xl space-y-4">
-              <h3 className="text-lg font-black text-ink">Cohort Announcements</h3>
-              <div className="p-4 rounded-2xl bg-white border border-line text-xs space-y-1">
-                <div className="flex items-center justify-between text-muted text-[10px] font-bold">
-                  <span>Chat2Build Admissions</span>
-                  <span>November 2026</span>
+            <div className="p-4 sm:p-8 max-w-4xl space-y-6">
+              <h3 className="text-base font-black text-ink">Cohort Announcements</h3>
+              <div className="bg-white rounded-2xl border border-[#e8e8f0] p-6 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black uppercase text-[#090bc2]">Welcome to Chat2Build</span>
+                  <span className="text-[11px] text-muted">Pinned Announcement</span>
                 </div>
-                <h4 className="font-black text-ink text-sm">Welcome to Cohort 1! 🎉</h4>
-                <p className="text-slate-600 leading-relaxed pt-1">
-                  Classes are structured into 2 intensive immersion weeks. Complete Week 1 to unlock the full-stack database and AI integration exercises in Week 2!
+                <p className="text-xs text-slate-600 leading-relaxed pt-1">
+                  Welcome to the Chat2Build learning platform! Start with the Course Introduction class above to get familiar with our building approach. Live office hours and mentor review sessions are announced in the WhatsApp community.
                 </p>
               </div>
             </div>
@@ -601,115 +739,173 @@ export default function StudentClassroomPage() {
         {/* RIGHT COLUMN: UDEMY-STYLE COURSE CONTENT SIDEBAR          */}
         {/* ======================================================== */}
         {sidebarOpen && (
-          <aside className="w-full lg:w-[30%] xl:w-[27%] bg-white border-l border-[#e8e8f0] flex flex-col h-[500px] lg:h-auto overflow-y-auto shrink-0 shadow-xs">
-            {/* Sidebar Header Bar */}
-            <div className="p-4 border-b border-[#e8e8f0] flex items-center justify-between bg-white sticky top-0 z-10">
-              <h2 className="text-sm font-black text-ink">Course content</h2>
+          <aside className="w-full lg:w-[30%] xl:w-[27%] bg-[#1c1d1f] border-t lg:border-t-0 lg:border-l border-[#2d2f31] flex flex-col shrink-0 text-white max-h-[500px] lg:max-h-none overflow-y-auto">
+            {/* Sidebar Header */}
+            <div className="p-4 border-b border-[#2d2f31] flex items-center justify-between sticky top-0 bg-[#1c1d1f] z-10">
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-sm tracking-tight text-white">Course content</h3>
+                <span className="text-xs font-semibold text-slate-400">
+                  ({completedCount}/{totalClassesCount})
+                </span>
+              </div>
               <button
                 type="button"
                 onClick={() => setSidebarOpen(false)}
-                className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-500 text-xs font-bold cursor-pointer"
-                title="Collapse sidebar"
+                className="text-slate-400 hover:text-white font-bold text-sm p-1 rounded-md hover:bg-[#2d2f31] cursor-pointer"
+                title="Hide course content"
               >
                 ✕
               </button>
             </div>
 
-            {/* Sections Accordion */}
-            <div className="divide-y divide-[#e8e8f0]">
+            {/* ---------------------------------------------------- */}
+            {/* 0. COURSE INTRODUCTION CLASS (AT VERY TOP BEFORE WEEKS) */}
+            {/* ---------------------------------------------------- */}
+            {course && (
+              <div className="border-b border-[#3e4143]/60 bg-[#17181a]">
+                <button
+                  type="button"
+                  onClick={handleSelectIntro}
+                  className={`w-full text-left p-3.5 transition flex items-start gap-3 cursor-pointer ${
+                    activeLesson?.isIntro
+                      ? 'bg-[#090bc2]/25 border-l-4 border-lemon'
+                      : 'hover:bg-[#2d2f31]'
+                  }`}
+                >
+                  {/* Completion Checkbox for Intro */}
+                  <div
+                    onClick={(e) => handleToggleCompleted(`intro-${course.id}`, e)}
+                    className="mt-0.5 shrink-0 cursor-pointer"
+                    title="Mark orientation completed"
+                  >
+                    <div
+                      className={`h-4 w-4 rounded-sm border flex items-center justify-center text-[10px] transition ${
+                        completedClasses.includes(`intro-${course.id}`)
+                          ? 'bg-[#090bc2] border-[#090bc2] text-white'
+                          : 'border-slate-500 hover:border-slate-300'
+                      }`}
+                    >
+                      {completedClasses.includes(`intro-${course.id}`) && '✓'}
+                    </div>
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-lemon text-[#080981]">
+                        Course Intro
+                      </span>
+                      <span className="text-xs font-bold text-slate-200 truncate">
+                        {course.introTitle || 'Orientation & Course Overview'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-[11px] text-slate-400 mt-1">
+                      <span>▶ {course.introDuration || '15 mins'}</span>
+                      {course.introSlideUrl && (
+                        <span className="text-blue-300 font-bold">• 📄 Slides</span>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              </div>
+            )}
+
+            {/* ---------------------------------------------------- */}
+            {/* 1. SECTIONS ACCORDION (WEEK 1, WEEK 2, etc.)          */}
+            {/* ---------------------------------------------------- */}
+            <div className="divide-y divide-[#2d2f31] flex-1">
               {modules.map((mod, modIdx) => {
                 const isExpanded = expandedModules[mod.id] ?? true
                 const modClasses = mod.classes || []
-                const modCompletedCount = modClasses.filter((c) =>
+                const modCompleted = modClasses.filter((c) =>
                   completedClasses.includes(c.id)
                 ).length
 
                 return (
-                  <div key={mod.id} className="bg-white">
-                    {/* Section Header Button */}
+                  <div key={mod.id} className="bg-[#1c1d1f]">
+                    {/* Module Accordion Header */}
                     <button
                       type="button"
                       onClick={() => toggleModule(mod.id)}
-                      className="w-full p-4 text-left bg-[#f7f7fc] hover:bg-slate-100/80 transition flex items-start justify-between gap-3 cursor-pointer"
+                      className="w-full text-left p-4 hover:bg-[#25272a] transition flex items-start justify-between gap-3 cursor-pointer select-none"
                     >
-                      <div className="space-y-1">
-                        <h3 className="text-xs font-black text-ink leading-snug">
+                      <div className="space-y-0.5 min-w-0">
+                        <h4 className="text-xs font-bold text-slate-100 leading-snug">
                           Section {modIdx + 1}: Week {mod.weekNumber} - {mod.title}
-                        </h3>
-                        <p className="text-[11px] text-muted tabular-num">
-                          {modCompletedCount} / {modClasses.length} completed
+                        </h4>
+                        <p className="text-[11px] text-slate-400 tabular-num">
+                          {modCompleted} / {modClasses.length} completed
                         </p>
                       </div>
 
-                      <span
-                        className={`text-slate-400 text-xs font-bold transition-transform ${
-                          isExpanded ? 'rotate-180' : ''
-                        }`}
-                      >
-                        ▼
+                      <span className="text-xs text-slate-400 shrink-0 mt-0.5">
+                        {isExpanded ? '▲' : '▼'}
                       </span>
                     </button>
 
-                    {/* Classes in Section */}
+                    {/* Classes inside Section */}
                     {isExpanded && (
-                      <div className="divide-y divide-[#f0f0f5]">
-                        {modClasses.length > 0 ? (
+                      <div className="divide-y divide-[#282a2d] bg-[#141517]">
+                        {modClasses.length === 0 ? (
+                          <div className="p-4 text-xs text-slate-500 italic">
+                            No classes published in this section yet.
+                          </div>
+                        ) : (
                           modClasses.map((cls) => {
-                            const isActive = activeClass?.id === cls.id
+                            const isCurrentActive =
+                              !activeLesson?.isIntro && activeLesson?.id === cls.id
                             const isDone = completedClasses.includes(cls.id)
 
                             return (
-                              <div
+                              <button
                                 key={cls.id}
-                                onClick={() => setActiveClass(cls)}
-                                className={`p-3.5 pl-4 transition flex items-start gap-3 cursor-pointer select-none ${
-                                  isActive
-                                    ? 'bg-[#f0f0fa] border-l-4 border-[#090bc2]'
-                                    : 'hover:bg-[#fafafc]'
+                                type="button"
+                                onClick={() => handleSelectClass(cls)}
+                                className={`w-full text-left p-3.5 transition flex items-start gap-3 cursor-pointer ${
+                                  isCurrentActive
+                                    ? 'bg-[#090bc2]/20 border-l-4 border-[#090bc2]'
+                                    : 'hover:bg-[#1f2124]'
                                 }`}
                               >
-                                {/* Interactive Checkbox */}
-                                <input
-                                  type="checkbox"
-                                  checked={isDone}
-                                  onChange={(e) => handleToggleCompleted(cls.id, e as any)}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="mt-0.5 h-4 w-4 rounded text-[#090bc2] focus:ring-[#090bc2] cursor-pointer"
-                                />
+                                {/* Checkbox for class completion */}
+                                <div
+                                  onClick={(e) => handleToggleCompleted(cls.id, e)}
+                                  className="mt-0.5 shrink-0 cursor-pointer"
+                                  title="Mark class completed"
+                                >
+                                  <div
+                                    className={`h-4 w-4 rounded-sm border flex items-center justify-center text-[10px] transition ${
+                                      isDone
+                                        ? 'bg-[#090bc2] border-[#090bc2] text-white'
+                                        : 'border-slate-500 hover:border-slate-300'
+                                    }`}
+                                  >
+                                    {isDone && '✓'}
+                                  </div>
+                                </div>
 
-                                {/* Class Info */}
+                                {/* Class Item Details */}
                                 <div className="flex-1 min-w-0">
                                   <p
-                                    className={`text-xs leading-snug ${
-                                      isActive
-                                        ? 'font-black text-[#090bc2]'
-                                        : isDone
-                                        ? 'text-slate-600'
-                                        : 'font-semibold text-ink'
+                                    className={`text-xs font-semibold leading-snug truncate ${
+                                      isCurrentActive
+                                        ? 'text-white font-black'
+                                        : 'text-slate-300'
                                     }`}
                                   >
                                     {cls.classNumber}. {cls.title}
                                   </p>
 
-                                  <div className="flex items-center gap-2 mt-1 text-[11px] text-muted">
-                                    <span className="flex items-center gap-1">
-                                      <span>▶</span>
-                                      <span>{cls.duration || 'Video'}</span>
-                                    </span>
+                                  <div className="flex items-center gap-3 text-[11px] text-slate-400 mt-1">
+                                    {cls.duration && <span>▶ {cls.duration}</span>}
                                     {cls.slideUrl && (
-                                      <span className="text-[#090bc2] font-bold">
-                                        • 📄 Slides
-                                      </span>
+                                      <span className="text-blue-300 font-bold">• 📄 Slides</span>
                                     )}
                                   </div>
                                 </div>
-                              </div>
+                              </button>
                             )
                           })
-                        ) : (
-                          <div className="p-3 text-center text-[11px] text-muted italic">
-                            No classes uploaded yet
-                          </div>
                         )}
                       </div>
                     )}
@@ -721,5 +917,19 @@ export default function StudentClassroomPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function StudentClassroomPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#1c1d1f] text-white">
+          <div className="h-9 w-9 animate-spin rounded-full border-4 border-lemon border-t-transparent" />
+        </div>
+      }
+    >
+      <ClassroomContent />
+    </Suspense>
   )
 }

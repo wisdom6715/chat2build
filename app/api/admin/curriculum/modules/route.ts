@@ -28,11 +28,19 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized admin access.' }, { status: 401 })
     }
 
+    const { searchParams } = new URL(req.url)
+    const courseId = searchParams.get('courseId')
+
     const modulesRef = collection(db, 'curriculum_modules')
     let snap
     try {
-      const q = query(modulesRef, orderBy('order', 'asc'))
-      snap = await getDocs(q)
+      if (courseId) {
+        const q = query(modulesRef, where('courseId', '==', courseId), orderBy('order', 'asc'))
+        snap = await getDocs(q)
+      } else {
+        const q = query(modulesRef, orderBy('order', 'asc'))
+        snap = await getDocs(q)
+      }
     } catch {
       snap = await getDocs(modulesRef)
     }
@@ -51,18 +59,24 @@ export async function GET(req: NextRequest) {
       })
     }
 
-    const modules = snap.docs.map((docSnap) => {
-      const data = docSnap.data()
-      return {
-        id: docSnap.id,
-        title: data.title || '',
-        weekNumber: data.weekNumber || 1,
-        order: data.order ?? 1,
-        description: data.description || '',
-        classCount: classCountMap[docSnap.id] || 0,
-        createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : null,
-      }
-    })
+    const modules = snap.docs
+      .map((docSnap) => {
+        const data = docSnap.data()
+        return {
+          id: docSnap.id,
+          courseId: data.courseId || '',
+          title: data.title || '',
+          weekNumber: data.weekNumber || 1,
+          order: data.order ?? 1,
+          description: data.description || '',
+          classCount: classCountMap[docSnap.id] || 0,
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : null,
+        }
+      })
+      .filter((m) => {
+        if (!courseId) return true
+        return m.courseId === courseId || (!m.courseId && courseId === 'default')
+      })
 
     // Sort by order ascending
     modules.sort((a, b) => a.order - b.order)
@@ -81,6 +95,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json().catch(() => ({}))
+    const courseId = (body.courseId || '').trim()
     const title = (body.title || '').trim()
     const weekNumber = Number(body.weekNumber) || 1
     const order = Number(body.order) || weekNumber
@@ -92,6 +107,7 @@ export async function POST(req: NextRequest) {
 
     const modulesRef = collection(db, 'curriculum_modules')
     const docRef = await addDoc(modulesRef, {
+      courseId: courseId || '',
       title,
       weekNumber,
       order,
@@ -103,6 +119,7 @@ export async function POST(req: NextRequest) {
       success: true,
       module: {
         id: docRef.id,
+        courseId: courseId || '',
         title,
         weekNumber,
         order,
@@ -127,6 +144,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Module ID is required for update.' }, { status: 400 })
     }
 
+    const courseId = body.courseId?.trim()
     const title = (body.title || '').trim()
     const weekNumber = Number(body.weekNumber) || 1
     const order = Number(body.order) ?? weekNumber
@@ -134,6 +152,7 @@ export async function PUT(req: NextRequest) {
 
     const moduleDocRef = doc(db, 'curriculum_modules', id)
     await updateDoc(moduleDocRef, {
+      ...(courseId !== undefined && { courseId }),
       ...(title && { title }),
       weekNumber,
       order,

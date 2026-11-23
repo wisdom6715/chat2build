@@ -23,6 +23,10 @@ function checkAdminAuth(req: NextRequest): boolean {
   return Boolean(adminCookie || authHeader)
 }
 
+function getTodayString(): string {
+  return new Date().toISOString().split('T')[0]
+}
+
 export async function GET(req: NextRequest) {
   try {
     if (!checkAdminAuth(req)) {
@@ -31,6 +35,22 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url)
     const moduleId = searchParams.get('moduleId')
+    const today = getTodayString()
+
+    // 1. Fetch today's view counts from video_views
+    const viewsRef = collection(db, 'video_views')
+    let todayViewCounts: Record<string, number> = {}
+    try {
+      const qToday = query(viewsRef, where('date', '==', today))
+      const snapToday = await getDocs(qToday)
+      snapToday.docs.forEach((docSnap) => {
+        const v = docSnap.data()
+        const target = v.classId || (v.isIntro ? 'intro' : null)
+        if (target) {
+          todayViewCounts[target] = (todayViewCounts[target] || 0) + 1
+        }
+      })
+    } catch (e) {}
 
     const classesRef = collection(db, 'curriculum_classes')
     let snap
@@ -44,7 +64,6 @@ export async function GET(req: NextRequest) {
         snap = await getDocs(q)
       }
     } catch {
-      // Fallback if index isn't ready
       if (moduleId) {
         const q = query(classesRef, where('moduleId', '==', moduleId))
         snap = await getDocs(q)
@@ -66,6 +85,8 @@ export async function GET(req: NextRequest) {
         slideUrl: data.slideUrl || '',
         duration: data.duration || '',
         notes: data.notes || '',
+        viewCount: data.viewCount || 0,
+        todayViews: todayViewCounts[docSnap.id] || 0,
         createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : null,
       }
     })
@@ -96,15 +117,10 @@ export async function POST(req: NextRequest) {
     const notes = (body.notes || '').trim()
 
     if (!moduleId) {
-      return NextResponse.json({ error: 'Please select a module/week.' }, { status: 400 })
+      return NextResponse.json({ error: 'Module ID is required to create a class.' }, { status: 400 })
     }
-
     if (!title) {
       return NextResponse.json({ error: 'Class title is required.' }, { status: 400 })
-    }
-
-    if (!youtubeUrl) {
-      return NextResponse.json({ error: 'YouTube video URL is required.' }, { status: 400 })
     }
 
     const embedUrl = getYouTubeEmbedUrl(youtubeUrl)
@@ -120,12 +136,13 @@ export async function POST(req: NextRequest) {
       slideUrl,
       duration,
       notes,
+      viewCount: 0,
       createdAt: serverTimestamp(),
     })
 
     return NextResponse.json({
       success: true,
-      classItem: {
+      class: {
         id: docRef.id,
         moduleId,
         title,
@@ -136,6 +153,8 @@ export async function POST(req: NextRequest) {
         slideUrl,
         duration,
         notes,
+        viewCount: 0,
+        todayViews: 0,
       },
     })
   } catch (err: any) {
@@ -153,36 +172,33 @@ export async function PUT(req: NextRequest) {
     const body = await req.json().catch(() => ({}))
     const id = body.id
     if (!id) {
-      return NextResponse.json({ error: 'Class ID is required.' }, { status: 400 })
+      return NextResponse.json({ error: 'Class ID is required for update.' }, { status: 400 })
     }
 
+    const title = (body.title || '').trim()
+    const classNumber = Number(body.classNumber) || 1
+    const order = Number(body.order) ?? classNumber
+    const youtubeUrl = (body.youtubeUrl || '').trim()
+    const slideUrl = (body.slideUrl || '').trim()
+    const duration = (body.duration || '').trim()
+    const notes = (body.notes || '').trim()
     const moduleId = body.moduleId?.trim()
-    const title = body.title?.trim()
-    const classNumber = body.classNumber !== undefined ? Number(body.classNumber) : undefined
-    const order = body.order !== undefined ? Number(body.order) : undefined
-    const youtubeUrl = body.youtubeUrl?.trim()
-    const slideUrl = body.slideUrl?.trim()
-    const duration = body.duration?.trim()
-    const notes = body.notes?.trim()
+
+    const embedUrl = getYouTubeEmbedUrl(youtubeUrl)
 
     const classDocRef = doc(db, 'curriculum_classes', id)
-    const updateData: Record<string, any> = {
+    await updateDoc(classDocRef, {
+      ...(moduleId && { moduleId }),
+      ...(title && { title }),
+      classNumber,
+      order,
+      youtubeUrl,
+      embedUrl,
+      slideUrl,
+      duration,
+      notes,
       updatedAt: serverTimestamp(),
-    }
-
-    if (moduleId) updateData.moduleId = moduleId
-    if (title) updateData.title = title
-    if (classNumber !== undefined) updateData.classNumber = classNumber
-    if (order !== undefined) updateData.order = order
-    if (youtubeUrl !== undefined) {
-      updateData.youtubeUrl = youtubeUrl
-      updateData.embedUrl = getYouTubeEmbedUrl(youtubeUrl)
-    }
-    if (slideUrl !== undefined) updateData.slideUrl = slideUrl
-    if (duration !== undefined) updateData.duration = duration
-    if (notes !== undefined) updateData.notes = notes
-
-    await updateDoc(classDocRef, updateData)
+    })
 
     return NextResponse.json({ success: true, message: 'Class updated successfully.' })
   } catch (err: any) {

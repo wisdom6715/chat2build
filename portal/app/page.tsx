@@ -26,7 +26,7 @@ export default function StudentLoginPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.authenticated) {
-          router.replace('/classroom')
+          router.replace('/courses')
         }
       })
       .catch(() => {})
@@ -183,8 +183,8 @@ export default function StudentLoginPage() {
         throw new Error(data.error || 'Failed to set password.')
       }
 
-      // Direct entry to classroom
-      router.push('/classroom')
+      // Direct entry to courses catalog
+      router.push('/courses')
     } catch (err: any) {
       setErrorMessage(err.message || 'Failed to save password.')
       setLoading(false)
@@ -217,8 +217,8 @@ export default function StudentLoginPage() {
         throw new Error(data.error || 'Incorrect password.')
       }
 
-      // Direct entry to classroom
-      router.push('/classroom')
+      // Direct entry to courses catalog
+      router.push('/courses')
     } catch (err: any) {
       setErrorMessage(err.message || 'Login failed.')
       setLoading(false)
