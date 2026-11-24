@@ -96,7 +96,7 @@ export default function StudentCoursesPage() {
               className="h-9 w-9 rounded-xl object-cover shadow-xs"
             />
             <span className="text-base font-black tracking-tight text-slate-900 hidden sm:inline">
-              Chat2Build <span className="text-[#090bc2]">LMS</span>
+              Chat2Build
             </span>
           </Link>
           <span className="text-slate-300 hidden sm:inline">|</span>
@@ -266,7 +266,7 @@ export default function StudentCoursesPage() {
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <img src="/logo.jpg" alt="Chat2Build" className="h-6 w-6 rounded-md object-cover shadow-2xs" />
-            <span className="font-bold text-slate-800">Chat2Build LMS Portal</span>
+            <span className="font-bold text-slate-800">Chat2Build</span>
           </div>
           <p>© 2026 Chat2Build. All rights reserved.</p>
         </div>
