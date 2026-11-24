@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
         classNumber: d.classNumber ?? 1,
         order: d.order ?? 1,
         youtubeUrl: d.youtubeUrl || '',
-        embedUrl: d.embedUrl || getYouTubeEmbedUrl(d.youtubeUrl || ''),
+        embedUrl: getYouTubeEmbedUrl(d.youtubeUrl || d.embedUrl || ''),
         slideUrl: d.slideUrl || '',
         duration: d.duration || '',
         notes: d.notes || '',

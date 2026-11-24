@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
         thumbnailUrl: d.thumbnailUrl || '',
         introTitle: d.introTitle || 'Course Orientation & Setup',
         introVideoUrl: d.introVideoUrl || '',
-        introEmbedUrl: d.introEmbedUrl || getYouTubeEmbedUrl(d.introVideoUrl || ''),
+        introEmbedUrl: getYouTubeEmbedUrl(d.introVideoUrl || d.introEmbedUrl || ''),
         introSlideUrl: d.introSlideUrl || '',
         introDuration: d.introDuration || '15 mins',
         introNotes: d.introNotes || '',

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { getYouTubeEmbedUrl, extractYouTubeVideoId } from '../../lib/youtube'
+import { getCanvaEmbedUrl } from '../../lib/youtube'
 
 interface CourseItem {
   id: string
@@ -370,7 +370,7 @@ export function CurriculumManager() {
       return
     }
     if (!classYoutubeUrl.trim()) {
-      showToast('error', 'YouTube video URL is required.')
+      showToast('error', 'Canva video URL is required.')
       return
     }
 
@@ -627,7 +627,7 @@ export function CurriculumManager() {
                     onClick={() =>
                       setPreviewVideo({
                         title: currentCourse.introTitle || 'Course Orientation',
-                        embedUrl: getYouTubeEmbedUrl(currentCourse.introVideoUrl || ''),
+                        embedUrl: getCanvaEmbedUrl(currentCourse.introVideoUrl || ''),
                       })
                     }
                     className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-black text-white text-xs font-bold cursor-pointer"
@@ -812,7 +812,7 @@ export function CurriculumManager() {
                       {cls.duration && <span>⏱️ {cls.duration}</span>}
                       {cls.youtubeUrl && (
                         <span className="text-emerald-700 font-bold truncate max-w-xs">
-                          🎥 YouTube Linked
+                          🎥 Canva Video Linked
                         </span>
                       )}
                       {cls.slideUrl ? (
@@ -836,7 +836,7 @@ export function CurriculumManager() {
                         onClick={() =>
                           setPreviewVideo({
                             title: cls.title,
-                            embedUrl: cls.embedUrl,
+                            embedUrl: getCanvaEmbedUrl(cls.youtubeUrl || cls.embedUrl),
                           })
                         }
                         className="px-3 py-1 rounded-lg bg-slate-900 hover:bg-black text-white text-xs font-bold cursor-pointer"
@@ -932,12 +932,12 @@ export function CurriculumManager() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Intro YouTube Video URL</label>
+                    <label className="block font-bold text-slate-700 mb-1">Intro Canva Video URL</label>
                     <input
-                      type="url"
+                      type="text"
                       value={courseIntroVideoUrl}
                       onChange={(e) => setCourseIntroVideoUrl(e.target.value)}
-                      placeholder="https://www.youtube.com/watch?v=..."
+                      placeholder="https://www.canva.com/design/.../watch"
                       className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:border-[#090bc2] focus:outline-hidden"
                     />
                   </div>
@@ -1126,18 +1126,18 @@ export function CurriculumManager() {
 
               <div>
                 <label className="block font-black text-slate-700 mb-1">
-                  YouTube Video URL <span className="text-red-500">*</span>
+                  Canva Video URL <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type="url"
+                  type="text"
                   required
                   value={classYoutubeUrl}
                   onChange={(e) => setClassYoutubeUrl(e.target.value)}
-                  placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                  placeholder="https://www.canva.com/design/.../watch (or paste Canva embed code)"
                   className="w-full px-3 py-2 rounded-xl border border-slate-300 font-medium"
                 />
                 <p className="text-[10px] text-slate-400 mt-1">
-                  This URL will automatically be embedded inside the student classroom iframe.
+                  Paste your Canva video share link or embed code — it will automatically embed in the classroom.
                 </p>
               </div>
 
@@ -1219,9 +1219,10 @@ export function CurriculumManager() {
             </div>
             <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-black">
               <iframe
-                src={`${previewVideo.embedUrl}?autoplay=1&rel=0`}
+                loading="lazy"
+                src={getCanvaEmbedUrl(previewVideo.embedUrl)}
                 title={previewVideo.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allow="fullscreen"
                 allowFullScreen
                 className="absolute inset-0 w-full h-full border-0"
               />

@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
         classNumber: data.classNumber ?? 1,
         order: data.order ?? 1,
         youtubeUrl: data.youtubeUrl || '',
-        embedUrl: data.embedUrl || getYouTubeEmbedUrl(data.youtubeUrl || ''),
+        embedUrl: getYouTubeEmbedUrl(data.youtubeUrl || data.embedUrl || ''),
         slideUrl: data.slideUrl || '',
         duration: data.duration || '',
         notes: data.notes || '',

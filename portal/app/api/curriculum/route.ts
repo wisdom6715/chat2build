@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '../../../lib/firebase'
 import { collection, getDocs, query, orderBy, where } from 'firebase/firestore'
-import { getYouTubeEmbedUrl, getYouTubeThumbnailUrl } from '../../../lib/youtube'
+import { getCanvaEmbedUrl, getYouTubeThumbnailUrl } from '../../../lib/youtube'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
         thumbnailUrl: data.thumbnailUrl || '/images/web-dev-bootcamp-ai.jpg',
         introTitle: data.introTitle || 'Orientation & Course Overview',
         introVideoUrl: videoUrl,
-        introEmbedUrl: data.introEmbedUrl || getYouTubeEmbedUrl(videoUrl),
+        introEmbedUrl: getCanvaEmbedUrl(videoUrl || data.introEmbedUrl || ''),
         introSlideUrl: data.introSlideUrl || '',
         introDuration: data.introDuration || '15 mins',
         introNotes: data.introNotes || '',
@@ -46,7 +46,6 @@ export async function GET(req: NextRequest) {
 
     // If no course exists in Firestore, fallback
     if (coursesList.length === 0) {
-      const defaultVideoUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
       coursesList = [
         {
           id: 'default-course',
@@ -54,8 +53,8 @@ export async function GET(req: NextRequest) {
           description: 'A 2-week intensive bootcamp teaching non-programmers how to design, build, and deploy production-ready web applications using modern AI workflows.',
           thumbnailUrl: '/images/web-dev-bootcamp-ai.jpg',
           introTitle: 'Orientation & Course Overview',
-          introVideoUrl: defaultVideoUrl,
-          introEmbedUrl: getYouTubeEmbedUrl(defaultVideoUrl),
+          introVideoUrl: '',
+          introEmbedUrl: '',
           introSlideUrl: '',
           introDuration: '15 mins',
           introNotes: 'Welcome to Chat2Build! Watch this orientation class to understand the curriculum schedule, Stitch UI setup, and cohort community.',
@@ -119,7 +118,7 @@ export async function GET(req: NextRequest) {
         classNumber: d.classNumber ?? 1,
         order: d.order ?? 1,
         youtubeUrl: ytUrl,
-        embedUrl: d.embedUrl || getYouTubeEmbedUrl(ytUrl),
+        embedUrl: getCanvaEmbedUrl(ytUrl || d.embedUrl || ''),
         thumbnailUrl: getYouTubeThumbnailUrl(ytUrl),
         slideUrl: d.slideUrl || '',
         duration: d.duration || '',

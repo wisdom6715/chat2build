@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { getCanvaEmbedUrl } from '../../lib/youtube'
 
 interface ClassItem {
   id: string
@@ -159,7 +160,7 @@ function ClassroomContent() {
               isIntro: true,
               title: activeCourse.introTitle || 'Orientation & Course Overview',
               duration: activeCourse.introDuration || '15 mins',
-              embedUrl: activeCourse.introEmbedUrl || 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
+              embedUrl: getCanvaEmbedUrl(activeCourse.introEmbedUrl || activeCourse.introVideoUrl || ''),
               youtubeUrl: activeCourse.introVideoUrl || '',
               slideUrl: activeCourse.introSlideUrl || '',
               notes:
@@ -479,12 +480,13 @@ function ClassroomContent() {
           <div className="bg-slate-950 w-full flex justify-center items-center">
             <div className="w-full max-w-[1400px]">
               <div className="relative aspect-video w-full bg-slate-950">
-                {activeLesson?.embedUrl ? (
+                {activeLesson && (activeLesson.embedUrl || activeLesson.youtubeUrl) ? (
                   <iframe
                     key={activeLesson.id}
-                    src={`${activeLesson.embedUrl}?autoplay=0&rel=0&modestbranding=1`}
+                    loading="lazy"
+                    src={getCanvaEmbedUrl(activeLesson.embedUrl || activeLesson.youtubeUrl)}
                     title={activeLesson.title}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allow="fullscreen"
                     allowFullScreen
                     className="absolute inset-0 h-full w-full border-0"
                   />
