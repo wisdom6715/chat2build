@@ -17,6 +17,14 @@ const joan = Joan({
 export const metadata: Metadata = {
   title: 'Chat2Build Student Portal — Your Classroom',
   description: 'Access your 2-Week AI Web App Bootcamp video lessons, lecture slides, and coding resources.',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/logo.jpg', type: 'image/jpeg' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
 }
 
 export default function RootLayout({

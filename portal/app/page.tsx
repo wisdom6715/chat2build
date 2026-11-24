@@ -69,7 +69,14 @@ export default function StudentLoginPage() {
 
       setStudentName(checkData.fullname || 'Student')
 
-      // If registered, send OTP code via Resend
+      // Returning student with password set: skip OTP completely (do not waste Resend emails!)
+      if (checkData.hasPasswordSet) {
+        setStep('PASSWORD_LOGIN')
+        setLoading(false)
+        return
+      }
+
+      // First-time student (no password set yet): send OTP to verify email before setting password
       const otpRes = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -78,12 +85,12 @@ export default function StudentLoginPage() {
       const otpData = await otpRes.json()
 
       if (!otpRes.ok) {
-        throw new Error(otpData.error || 'Failed to send login code.')
+        throw new Error(otpData.error || 'Failed to send verification code.')
       }
 
       setStep('OTP')
       setResendCooldown(60)
-      setSuccessMessage('We sent a 6-digit login code to your email!')
+      setSuccessMessage('We sent a 6-digit verification code to your email to set up your password!')
     } catch (err: any) {
       setErrorMessage(err.message || 'Something went wrong. Please try again.')
     } finally {
@@ -105,7 +112,7 @@ export default function StudentLoginPage() {
       const data = await res.json()
       if (res.ok) {
         setResendCooldown(60)
-        setSuccessMessage('A fresh login code has been sent!')
+        setSuccessMessage('A fresh verification code has been sent!')
       } else {
         setErrorMessage(data.error || 'Failed to resend code.')
       }
@@ -116,7 +123,7 @@ export default function StudentLoginPage() {
     }
   }
 
-  // 3. Verify OTP
+  // 3. Verify OTP (used only for initial password setup & forgot password reset)
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrorMessage('')
@@ -140,12 +147,10 @@ export default function StudentLoginPage() {
         throw new Error(data.error || 'Invalid verification code.')
       }
 
-      // Check whether password is set or needs to be created
-      if (data.hasPasswordSet) {
-        setStep('PASSWORD_LOGIN')
-      } else {
-        setStep('SET_PASSWORD')
-      }
+      // OTP is only used for initial password setup or password reset
+      setPassword('')
+      setConfirmPassword('')
+      setStep('SET_PASSWORD')
     } catch (err: any) {
       setErrorMessage(err.message || 'Failed to verify code.')
     } finally {
@@ -507,10 +512,15 @@ export default function StudentLoginPage() {
                 <div className="text-center pt-1">
                   <button
                     type="button"
-                    onClick={handleForgotPassword}
+                    onClick={() => {
+                      setStep('EMAIL')
+                      setPassword('')
+                      setErrorMessage('')
+                      setSuccessMessage('')
+                    }}
                     className="text-xs font-bold text-slate-500 hover:text-ink cursor-pointer"
                   >
-                    Log in with email code instead
+                    ← Use a different email
                   </button>
                 </div>
               </form>
