@@ -285,7 +285,7 @@ export default function StudentLoginPage() {
             {/* Top decorative badge */}
             <div className="text-center mb-6">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-[#090bc2]/10 border border-[#090bc2]/20 px-3.5 py-1 text-[11px] font-black uppercase tracking-wider text-[#090bc2]">
-                <span>🎓 2-Week Web App Bootcamp</span>
+                <span>2-Week Web App Bootcamp</span>
               </span>
               <h1 className="display-title text-[28px] sm:text-[32px] font-bold text-ink mt-3 leading-tight">
                 {step === 'EMAIL' && 'Log In to Your Classroom'}
@@ -352,7 +352,9 @@ export default function StudentLoginPage() {
               <div className="space-y-4 text-center">
                 <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-left">
                   <div className="flex items-start gap-2.5">
-                    <span className="text-xl">⚠️</span>
+                    <svg className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                    </svg>
                     <div>
                       <h4 className="text-xs font-black text-amber-900">Email not recognized</h4>
                       <p className="text-[11px] text-amber-800 mt-1 leading-relaxed">
@@ -366,7 +368,7 @@ export default function StudentLoginPage() {
                   href={`https://chat2build.pro/registration?email=${encodeURIComponent(email)}`}
                   className="w-full lemon-button py-3.5 text-sm font-black text-[#080981] shadow-sm text-center block"
                 >
-                  👉 Register for Free on Chat2Build
+                  Register for Free on Chat2Build
                 </a>
 
                 <button

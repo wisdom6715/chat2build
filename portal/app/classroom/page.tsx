@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, Suspense } from 'react'
+import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { getCanvaEmbedUrl } from '../../lib/youtube'
@@ -86,6 +86,25 @@ function ClassroomContent() {
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({})
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [shareToast, setShareToast] = useState(false)
+  const userMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!userMenuOpen) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false)
+      }
+    }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setUserMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [userMenuOpen])
 
   // 1. Authenticate & load curriculum
   useEffect(() => {
@@ -384,7 +403,9 @@ function ClassroomContent() {
         <div className="flex items-center gap-3 shrink-0">
           {/* Progress / Certificate Pill */}
           <div className="hidden md:flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full text-xs font-semibold text-slate-700 border border-slate-200">
-            <span className="text-sm">🏆</span>
+            <svg className="w-3.5 h-3.5 text-[#090bc2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
             <span className="tabular-num">
               {completedCount} / {totalClassesCount} completed ({progressPercent}%)
             </span>
@@ -404,7 +425,7 @@ function ClassroomContent() {
                 d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
               />
             </svg>
-            <span>{shareToast ? 'Link Copied! ✓' : 'Share'}</span>
+            <span>{shareToast ? 'Link Copied!' : 'Share'}</span>
           </button>
 
           {/* Toggle Course Content Sidebar Button */}
@@ -414,11 +435,11 @@ function ClassroomContent() {
             title={sidebarOpen ? 'Collapse course content' : 'Open course content'}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-bold text-slate-800 transition cursor-pointer"
           >
-            <span>{sidebarOpen ? '✕ Close list' : '☰ Course content'}</span>
+            <span>{sidebarOpen ? 'Close list' : 'Course content'}</span>
           </button>
 
           {/* Profile Dropdown */}
-          <div className="relative">
+          <div className="relative" ref={userMenuRef}>
             <button
               type="button"
               onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -436,19 +457,23 @@ function ClassroomContent() {
                 <div className="pt-2 space-y-1">
                   <Link
                     href="/courses"
+                    onClick={() => setUserMenuOpen(false)}
                     className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 text-slate-800 font-bold"
                   >
-                    <span>📚 My Courses</span>
-                    <span>→</span>
+                    <span>My Courses</span>
+                    <span>&rarr;</span>
                   </Link>
                   <a
                     href="https://chat.whatsapp.com/JX9whdzwMAdG1NhD5M5XvS?s=cl&p=a&mlu=4&ilr=4"
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => setUserMenuOpen(false)}
                     className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 text-[#090bc2] font-bold"
                   >
-                    <span>💬 WhatsApp Community</span>
-                    <span>↗</span>
+                    <span>WhatsApp Community</span>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 17L17 7M7 7h10v10" />
+                    </svg>
                   </a>
                   <button
                     type="button"
@@ -596,8 +621,10 @@ function ClassroomContent() {
                           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-[#090bc2] hover:bg-[#080981] text-white shadow-md hover:shadow-lg transition cursor-pointer ring-2 ring-[#090bc2]/20"
                           title="Click to view and download presentation slide PDF immediately"
                         >
-                          <span>📄 Download Slides</span>
-                          <span className="text-lemon">📥</span>
+                          <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                          <span>Download Slides</span>
                         </a>
                       ) : null}
 
@@ -612,16 +639,17 @@ function ClassroomContent() {
                             : 'bg-lemon text-[#080981] hover:brightness-105 shadow-xs'
                         }`}
                       >
+                        <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                        </svg>
                         <span>
-                          {isCurrentCompleted ? '✓ Class Completed' : 'Mark as Completed'}
+                          {isCurrentCompleted ? 'Class Completed' : 'Mark as Completed'}
                         </span>
-                        <span>⭐</span>
                       </button>
                     </div>
                   </div>
 
                   {/* Course / Cohort Ratings & Meta Indicators */}
-                  {/* VIEWER METRICS FORMAT: 👁️ {count} viewers • {today} today */}
                   <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-bold text-slate-500 border-b border-[#e8e8f0] pb-5">
                     <span className="flex items-center gap-1 text-[#b4690e]">
                       <span className="text-sm font-black">5.0</span>
@@ -629,23 +657,30 @@ function ClassroomContent() {
                       <span className="text-slate-400 font-normal">(Cohort 1)</span>
                     </span>
 
-                    <span className="flex items-center gap-1 text-slate-700">
-                      <span>👥</span>
+                    <span className="flex items-center gap-1.5 text-slate-700">
+                      <svg className="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
                       <span>Active Builders</span>
                     </span>
 
                     {activeLesson.duration && (
-                      <span className="flex items-center gap-1 text-slate-700">
-                        <span>⏱️</span>
+                      <span className="flex items-center gap-1.5 text-slate-700">
+                        <svg className="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                         <span>{activeLesson.duration}</span>
                       </span>
                     )}
 
-                    {/* LIVE VIEWER COUNTER: 👁️ 0 viewers • 0 today */}
+                    {/* LIVE VIEWER COUNTER */}
                     <span className="flex items-center gap-1.5 bg-blue-50 text-[#090bc2] px-3 py-1 rounded-lg border border-[#090bc2]/20 font-black">
-                      <span>👁️</span>
+                      <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
                       <span className="tabular-num">{activeLesson.viewCount} viewers</span>
-                      <span className="text-slate-300">•</span>
+                      <span className="text-slate-300">&bull;</span>
                       <span className="tabular-num text-emerald-700 font-black">
                         {activeLesson.todayViews} today
                       </span>
@@ -677,8 +712,10 @@ function ClassroomContent() {
                 <div className="p-6 rounded-2xl bg-white border border-[#e8e8f0] space-y-4 shadow-xs">
                   <div className="flex items-center justify-between gap-4 flex-wrap">
                     <div className="flex items-center gap-3">
-                      <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#090bc2] text-white text-xl">
-                        📄
+                      <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#090bc2] text-white">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
                       </span>
                       <div>
                         <h4 className="font-bold text-sm text-slate-900">{activeLesson.title} — Slide Deck</h4>
@@ -690,9 +727,12 @@ function ClassroomContent() {
                       href={activeLesson.slideUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-5 py-2.5 rounded-xl bg-lemon hover:brightness-105 text-[#080981] font-black text-xs transition"
+                      className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-lemon hover:brightness-105 text-[#080981] font-black text-xs transition"
                     >
-                      Open PDF in New Tab ↗
+                      <span>Open PDF in New Tab</span>
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M7 17L17 7M7 7h10v10" />
+                      </svg>
                     </a>
                   </div>
 
@@ -718,8 +758,10 @@ function ClassroomContent() {
             <div className="p-4 sm:p-8 max-w-4xl space-y-6 bg-white">
               <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-50 via-white to-blue-50 border border-emerald-200 space-y-4 shadow-xs">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-600 text-white text-2xl">
-                    💬
+                  <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-600 text-white">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
                   </span>
                   <div>
                     <h3 className="font-black text-lg text-slate-900">Official WhatsApp Cohort Group</h3>
@@ -736,7 +778,9 @@ function ClassroomContent() {
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs transition shadow-xs"
                   >
                     <span>Join WhatsApp Community</span>
-                    <span>↗</span>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M7 17L17 7M7 7h10v10" />
+                    </svg>
                   </a>
                 </div>
               </div>
@@ -841,10 +885,15 @@ function ClassroomContent() {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-3 text-[11px] text-slate-500 mt-1">
-                      <span>▶ {course.introDuration || '15 mins'}</span>
+                    <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-1">
+                      <span className="inline-flex items-center gap-1">
+                        <svg className="w-3 h-3 fill-current" viewBox="0 0 20 20">
+                          <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                        </svg>
+                        <span>{course.introDuration || '15 mins'}</span>
+                      </span>
                       {course.introSlideUrl && (
-                        <span className="text-[#090bc2] font-bold">• 📄 Slides</span>
+                        <span className="text-[#090bc2] font-bold">&bull; Slides</span>
                       )}
                     </div>
                   </div>
@@ -938,10 +987,17 @@ function ClassroomContent() {
                                     {cls.classNumber}. {cls.title}
                                   </p>
 
-                                  <div className="flex items-center gap-3 text-[11px] text-slate-500 mt-1">
-                                    {cls.duration && <span>▶ {cls.duration}</span>}
+                                  <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-1">
+                                    {cls.duration && (
+                                      <span className="inline-flex items-center gap-1">
+                                        <svg className="w-3 h-3 fill-current" viewBox="0 0 20 20">
+                                          <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                                        </svg>
+                                        <span>{cls.duration}</span>
+                                      </span>
+                                    )}
                                     {cls.slideUrl && (
-                                      <span className="text-[#090bc2] font-bold">• 📄 Slides</span>
+                                      <span className="text-[#090bc2] font-bold">&bull; Slides</span>
                                     )}
                                   </div>
                                 </div>
