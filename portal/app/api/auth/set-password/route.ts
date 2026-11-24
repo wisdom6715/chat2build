@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '../../../../lib/firebase'
-import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore'
+import { doc, setDoc, serverTimestamp, getDoc, collection, query, where, getDocs } from 'firebase/firestore'
 import { hashPassword, createSessionToken } from '../../../../lib/auth'
 
 export const dynamic = 'force-dynamic'
@@ -26,10 +26,26 @@ export async function POST(req: NextRequest) {
     const existingSnap = await getDoc(userDocRef)
     const existingData = existingSnap.exists() ? existingSnap.data() : {}
 
+    let studentName: string = existingData.name || ''
+    if (!studentName || studentName.trim().toLowerCase() === 'student') {
+      try {
+        const regSnap = await getDocs(query(collection(db, 'registrations'), where('email', '==', email)))
+        if (!regSnap.empty) {
+          const regData = regSnap.docs[0].data()
+          studentName = (regData.fullname || regData.name || '').trim()
+        }
+      } catch {}
+    }
+
+    if (!studentName) {
+      studentName = email.split('@')[0]
+    }
+
     await setDoc(
       userDocRef,
       {
         email,
+        name: studentName,
         passwordHash,
         hasPasswordSet: true,
         updatedAt: serverTimestamp(),
@@ -43,7 +59,7 @@ export async function POST(req: NextRequest) {
 
     const token = createSessionToken({
       email,
-      name: existingData.name || 'Student',
+      name: studentName,
       loginTime: Date.now(),
     })
 

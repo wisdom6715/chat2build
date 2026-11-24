@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '../../../../lib/firebase'
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc, updateDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore'
 import { verifyPassword, createSessionToken } from '../../../../lib/auth'
 
 export const dynamic = 'force-dynamic'
@@ -30,13 +30,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Incorrect password. Please try again or reset your password.' }, { status: 401 })
     }
 
+    let studentName: string = userSnap.data()?.name || ''
+    if (!studentName || studentName.trim().toLowerCase() === 'student') {
+      try {
+        const regSnap = await getDocs(query(collection(db, 'registrations'), where('email', '==', email)))
+        if (!regSnap.empty) {
+          const regData = regSnap.docs[0].data()
+          studentName = (regData.fullname || regData.name || '').trim()
+        }
+      } catch {}
+    }
+
+    if (!studentName) {
+      studentName = email.split('@')[0]
+    }
+
     await updateDoc(userDocRef, {
+      name: studentName,
       lastLoginAt: serverTimestamp(),
     }).catch(() => null)
 
     const token = createSessionToken({
       email,
-      name: userSnap.data()?.name || 'Student',
+      name: studentName,
       loginTime: Date.now(),
     })
 

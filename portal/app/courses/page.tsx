@@ -69,9 +69,9 @@ export default function StudentCoursesPage() {
     }
   }
 
-  // Get Initials for Avatar (e.g. "Olayiwola" -> "OI", "Wisdom" -> "WI")
+  // Get Initials for Avatar (e.g. "Olayiwola" -> "OL", "Wisdom O." -> "WO")
   const getInitials = (name?: string) => {
-    if (!name) return 'OI'
+    if (!name) return 'C2'
     const parts = name.trim().split(/\s+/)
     if (parts.length >= 2) {
       return (parts[0][0] + parts[1][0]).toUpperCase()
@@ -79,8 +79,10 @@ export default function StudentCoursesPage() {
     return name.slice(0, 2).toUpperCase()
   }
 
-  const firstName = student?.name ? student.name.split(' ')[0].toLowerCase() : 'builder'
-  const completedCount = student?.completedClasses?.length || 0
+  const rawFirst = student?.name ? student.name.trim().split(/\s+/)[0] : ''
+  const firstName = rawFirst
+    ? rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1)
+    : 'Builder'
 
   return (
     <div className="min-h-screen bg-white text-[#11172f] flex flex-col font-sans selection:bg-[#090bc2] selection:text-white">
@@ -123,8 +125,8 @@ export default function StudentCoursesPage() {
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black text-white font-black text-xs ring-2 ring-slate-100 shadow-xs">
                 {getInitials(student?.name)}
               </div>
-              <span className="text-xs font-bold text-slate-700 hidden md:inline truncate max-w-[120px]">
-                {student?.name || 'Student'}
+              <span className="text-xs font-bold text-slate-700 hidden md:inline truncate max-w-[140px]">
+                {firstName}
               </span>
             </button>
 
@@ -246,7 +248,7 @@ export default function StudentCoursesPage() {
 
                     <Link
                       href={`/classroom?courseId=${course.id}`}
-                      className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-lemon hover:brightness-105 text-[#080981] font-black text-xs transition shadow-xs cursor-pointer"
+                      className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#090bc2] hover:bg-[#080981] text-white font-black text-xs transition shadow-xs cursor-pointer"
                     >
                       <span>Continue Learning</span>
                       <span>→</span>
