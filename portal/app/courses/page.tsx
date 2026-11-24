@@ -161,7 +161,7 @@ export default function StudentCoursesPage() {
       </header>
 
       {/* 2. USER GREETING HEADER (EXACT UDEMY REFERENCE) */}
-      <section className="bg-white border-b border-[#e8e8f0] pt-8 pb-6 px-4 sm:px-10">
+      <section className="bg-white pt-8 pb-6 px-4 sm:px-10">
         <div className="max-w-6xl mx-auto flex items-center gap-4">
           {/* Black Avatar Circle */}
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-black text-white font-black text-base shadow-xs select-none">
@@ -173,10 +173,7 @@ export default function StudentCoursesPage() {
               Welcome back, {firstName}
             </h1>
             <div className="flex items-center gap-2 text-xs text-slate-500 flex-wrap">
-              <span>Full Stack Web Developer</span>
-              <span className="text-[#6b21a8] hover:underline font-semibold cursor-pointer">
-                Edit occupation and interests
-              </span>
+              <span>AI FullStack Web Development</span>
             </div>
           </div>
         </div>
