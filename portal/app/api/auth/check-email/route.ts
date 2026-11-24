@@ -26,9 +26,6 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    const regData = regSnap.docs[0].data()
-    const fullname = regData.fullname || regData.name || 'Student'
-
     // 2. Check if student has already initialized student_users profile & password
     const studentUserDoc = await getDoc(doc(db, 'student_users', rawEmail)).catch(() => null)
     const hasPasswordSet = Boolean(studentUserDoc?.exists() && studentUserDoc.data()?.passwordHash)
@@ -37,7 +34,6 @@ export async function POST(req: NextRequest) {
       success: true,
       registered: true,
       email: rawEmail,
-      fullname,
       hasPasswordSet,
     })
   } catch (err: any) {

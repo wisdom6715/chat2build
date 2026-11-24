@@ -10,7 +10,6 @@ export default function StudentLoginPage() {
 
   const [step, setStep] = useState<AuthStep>('EMAIL')
   const [email, setEmail] = useState('')
-  const [studentName, setStudentName] = useState('')
   const [otp, setOtp] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -66,8 +65,6 @@ export default function StudentLoginPage() {
         setLoading(false)
         return
       }
-
-      setStudentName(checkData.fullname || 'Student')
 
       // Returning student with password set: skip OTP completely (do not waste Resend emails!)
       if (checkData.hasPasswordSet) {
@@ -272,8 +269,8 @@ export default function StudentLoginPage() {
           </div>
 
           <a
-            href="https://chat2build.pro"
-            className="text-xs font-bold text-muted hover:text-ink transition flex items-center gap-1"
+            href="https://chat2build.pro/registration"
+            className="inline-flex items-center justify-center px-4 py-2 rounded-[6px] bg-[#090bc2] hover:bg-[#080981] text-white border border-[#080981]/30 text-xs font-bold shadow-xs transition"
           >
             <span>Register</span>
           </a>
@@ -295,7 +292,7 @@ export default function StudentLoginPage() {
                 {step === 'NOT_REGISTERED' && 'Account Not Found'}
                 {step === 'OTP' && 'Check Your Email'}
                 {step === 'SET_PASSWORD' && 'Create Your Password'}
-                {step === 'PASSWORD_LOGIN' && `Welcome Back, ${studentName}!`}
+                {step === 'PASSWORD_LOGIN' && 'Welcome Back'}
               </h1>
               <p className="text-xs sm:text-[13px] text-muted mt-2 leading-relaxed">
                 {step === 'EMAIL' && 'Enter your registered email address to access our course materials and videos'}
